@@ -49,19 +49,19 @@ DISEASE_CLASSES = {
         'prevention': 'Maintain regular monitoring and good farming practices.'
     },
     4: {
-        'name': 'leaf-blight',
-        'description': 'Slow-decline is a progressive disease causing gradual plant deterioration.',
-        'treatment': 'Prune affected branches, apply copper-based fungicides, improve plant nutrition.',
-        'severity': 'Medium',
-        'prevention': 'Maintain plant vigor, ensure proper fertilization, monitor regularly.'
-    },
+           'name': 'Leaf-Blight',
+           'description': 'Leaf-blight is a fungal disease that causes brown or black spots on leaves, leading to drying and premature leaf drop.',
+           'treatment': 'Remove infected leaves, apply recommended fungicides, and avoid overhead watering.',
+           'severity': 'High',
+           'prevention': 'Ensure good air circulation, avoid excess moisture, use disease-free planting material, and inspect plants regularly.'
+       },
     5: {
-        'name': 'yello mottle',
-        'description': 'Leaf blight causes brown spots and premature defoliation on leaves.',
-        'treatment': 'Remove infected leaves, apply fungicide, improve air circulation.',
-        'severity': 'Medium',
-        'prevention': 'Space plants properly, avoid overhead watering, remove debris.'
-    }
+           'name': 'Yellow-Mottle',
+           'description': 'Yellow mottle is a viral disease that causes irregular yellow patches on leaves, reducing photosynthesis and weakening the plant.',
+           'treatment': 'Remove and destroy infected plants to prevent spread, control insect vectors such as aphids and whiteflies, and disinfect tools after use.',
+           'severity': 'High',
+           'prevention': 'Use virus-free planting material, manage insect populations, keep the field clean, and monitor plants frequently for early symptoms.'
+       }
 }
 
 def preprocess_image(image_data):
