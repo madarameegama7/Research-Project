@@ -4,7 +4,13 @@ import 'image_upload_screen.dart';
 import 'iot_device_setup_screen.dart';
 
 class BulkDensityScreen extends StatefulWidget {
-  const BulkDensityScreen({super.key});
+  final String qualityCheckId;
+  final String batchId;
+  const BulkDensityScreen({
+    super.key,
+    required this.qualityCheckId,
+    required this.batchId,
+  });
 
   @override
   State<BulkDensityScreen> createState() => _BulkDensityScreenState();
@@ -725,7 +731,7 @@ class _BulkDensityScreenState extends State<BulkDensityScreen>
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const ImageUploadScreen(),
+                                builder: (_) => const ImageUploadScreen(qualityCheckId: '', batchId: '',),
                               ),
                             );
                           }

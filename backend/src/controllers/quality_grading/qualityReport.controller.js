@@ -84,11 +84,11 @@ exports.getPdfReport = async (req, res) => {
 
     const gradeColor = (grade) => {
       const map = {
-        PREMIUM: "#1a6b3c",
-        GOLD: "#b8860b",
-        SILVER: "#607d8b",
-        BASIC: "#795548",
-        REJECT: RED,
+        "Grade 1 - Premium": "#1a6b3c",
+        "Grade 2 - Gold": "#b8860b",
+        "Grade 3 - Silver": "#607d8b",
+        "Grade 4 - Basic": "#795548",
+        Reject: RED,
       };
       return map[grade] || DARK;
     };

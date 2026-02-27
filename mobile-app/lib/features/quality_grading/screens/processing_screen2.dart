@@ -26,7 +26,7 @@ class _ProcessingScreen2State extends State<ProcessingScreen2> {
     try {
       // IMPORTANT: set fastApiBaseUrl based on emulator vs phone
       // Emulator:
-      const fastApiBaseUrl = "http://10.20.130.135:8000";
+      const fastApiBaseUrl = "http://10.89.148.24:8000";
       // Phone: const fastApiBaseUrl = "http://192.168.x.x:8000";
 
       final api = PepperInferenceApi(fastApiBaseUrl);

@@ -3,11 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../utils/responsive.dart';
 import 'image_capture_guide_screen.dart';
-import 'processing_screen.dart';
 import 'review_and_confirm_screen.dart';
 
 class ImageUploadScreen extends StatefulWidget {
-  const ImageUploadScreen({super.key});
+  final String qualityCheckId;
+  final String batchId;
+
+  const ImageUploadScreen({
+    super.key,
+    required this.qualityCheckId,
+    required this.batchId,
+  });
 
   @override
   State<ImageUploadScreen> createState() => _ImageUploadScreenState();
@@ -46,12 +52,10 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
 
     _animationController.forward();
   }
@@ -74,9 +78,11 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
     }
   }
 
-  bool get allImagesUploaded => images.values.every((element) => element != null);
+  bool get allImagesUploaded =>
+      images.values.every((element) => element != null);
 
-  int get uploadedImagesCount => images.values.where((element) => element != null).length;
+  int get uploadedImagesCount =>
+      images.values.where((element) => element != null).length;
 
   @override
   Widget build(BuildContext context) {
@@ -89,15 +95,15 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
         backgroundColor: primary,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Image Upload',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
         ),
       ),
       body: FadeTransition(
@@ -125,6 +131,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
                         _buildStepIndicator(2, true, primary, responsive),
                         _buildStepLine(true, primary, responsive),
                         _buildStepIndicator(3, true, primary, responsive),
+                        _buildStepLine(true, primary, responsive),
+                        _buildStepIndicator(4, true, primary, responsive),
                       ],
                     ),
                     ResponsiveSpacing(mobile: 12, tablet: 14, desktop: 16),
@@ -157,7 +165,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     '$uploadedImagesCount of 9 images',
@@ -273,7 +282,11 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
                                 ),
                               ],
                             ),
-                            ResponsiveSpacing(mobile: 16, tablet: 18, desktop: 20),
+                            ResponsiveSpacing(
+                              mobile: 16,
+                              tablet: 18,
+                              desktop: 20,
+                            ),
                             Text(
                               '1. Place pepper on clean white A4 paper\n2. Ensure good natural lighting\n3. Capture 9 images (3 angles × 3 layers)\n4. Keep camera 20-30 cm above sample',
                               style: TextStyle(
@@ -282,13 +295,18 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
                                 height: 1.6,
                               ),
                             ),
-                            ResponsiveSpacing(mobile: 12, tablet: 14, desktop: 16),
+                            ResponsiveSpacing(
+                              mobile: 12,
+                              tablet: 14,
+                              desktop: 16,
+                            ),
                             InkWell(
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const ImageCaptureGuideScreen(),
+                                    builder: (_) =>
+                                        const ImageCaptureGuideScreen(),
                                   ),
                                 );
                               },
@@ -395,6 +413,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
                               MaterialPageRoute(
                                 builder: (_) => SummaryConfirmationScreen(
                                   images: images,
+                                  qualityCheckId: widget.qualityCheckId,
+                                  batchId: widget.batchId,
                                 ),
                               ),
                             );
@@ -441,13 +461,13 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
   }
 
   Widget _buildSection(
-      Responsive responsive,
-      Color primary,
-      String title,
-      String keyPrefix,
-      IconData icon,
-      Color accentColor,
-      ) {
+    Responsive responsive,
+    Color primary,
+    String title,
+    String keyPrefix,
+    IconData icon,
+    Color accentColor,
+  ) {
     final sectionImages = {
       '${keyPrefix}_full': images['${keyPrefix}_full'],
       '${keyPrefix}_half': images['${keyPrefix}_half'],
@@ -466,7 +486,9 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: sectionComplete ? accentColor.withOpacity(0.3) : Colors.grey.shade200,
+          color: sectionComplete
+              ? accentColor.withOpacity(0.3)
+              : Colors.grey.shade200,
           width: sectionComplete ? 2 : 1,
         ),
         boxShadow: [
@@ -510,8 +532,16 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
               if (sectionComplete)
                 Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: responsive.value(mobile: 10, tablet: 11, desktop: 12),
-                    vertical: responsive.value(mobile: 4, tablet: 5, desktop: 6),
+                    horizontal: responsive.value(
+                      mobile: 10,
+                      tablet: 11,
+                      desktop: 12,
+                    ),
+                    vertical: responsive.value(
+                      mobile: 4,
+                      tablet: 5,
+                      desktop: 6,
+                    ),
                   ),
                   decoration: BoxDecoration(
                     color: Colors.green.shade50,
@@ -524,7 +554,11 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
                       Icon(
                         Icons.check_circle_rounded,
                         color: Colors.green.shade700,
-                        size: responsive.value(mobile: 14, tablet: 15, desktop: 16),
+                        size: responsive.value(
+                          mobile: 14,
+                          tablet: 15,
+                          desktop: 16,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -574,12 +608,12 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
   }
 
   Widget _buildImageTile(
-      Responsive responsive,
-      String key,
-      String label,
-      IconData icon,
-      Color accentColor,
-      ) {
+    Responsive responsive,
+    String key,
+    String label,
+    IconData icon,
+    Color accentColor,
+  ) {
     final hasImage = images[key] != null;
 
     return Expanded(
@@ -591,124 +625,147 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
             color: hasImage ? Colors.grey.shade50 : Colors.grey.shade50,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: hasImage ? accentColor.withOpacity(0.3) : Colors.grey.shade300,
+              color: hasImage
+                  ? accentColor.withOpacity(0.3)
+                  : Colors.grey.shade300,
               width: hasImage ? 2 : 1,
             ),
           ),
           child: hasImage
               ? Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Image.file(
-                  images[key]!,
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned(
-                top: 6,
-                right: 6,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade500,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 4,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.file(
+                        images[key]!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
                       ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.check_rounded,
-                    color: Colors.white,
-                    size: responsive.value(mobile: 14, tablet: 15, desktop: 16),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: responsive.value(mobile: 6, tablet: 7, desktop: 8),
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.7),
-                        Colors.transparent,
-                      ],
                     ),
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(14),
-                      bottomRight: Radius.circular(14),
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade500,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: responsive.value(
+                            mobile: 14,
+                            tablet: 15,
+                            desktop: 16,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: responsive.bodyFontSize - 2,
-                      fontWeight: FontWeight.w600,
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: responsive.value(
+                            mobile: 6,
+                            tablet: 7,
+                            desktop: 8,
+                          ),
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.7),
+                              Colors.transparent,
+                            ],
+                          ),
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(14),
+                            bottomRight: Radius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          label,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: responsive.bodyFontSize - 2,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ],
-          )
+                  ],
+                )
               : Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: EdgeInsets.all(
-                  responsive.value(mobile: 10, tablet: 11, desktop: 12),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(
+                        responsive.value(mobile: 10, tablet: 11, desktop: 12),
+                      ),
+                      decoration: BoxDecoration(
+                        color: accentColor.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.add_a_photo_rounded,
+                        color: accentColor,
+                        size: responsive.value(
+                          mobile: 24,
+                          tablet: 26,
+                          desktop: 28,
+                        ),
+                      ),
+                    ),
+                    ResponsiveSpacing(mobile: 8, tablet: 10, desktop: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: responsive.bodyFontSize - 2,
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    ResponsiveSpacing(mobile: 4, tablet: 5, desktop: 6),
+                    Icon(
+                      icon,
+                      color: Colors.grey.shade400,
+                      size: responsive.value(
+                        mobile: 16,
+                        tablet: 17,
+                        desktop: 18,
+                      ),
+                    ),
+                  ],
                 ),
-                decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.add_a_photo_rounded,
-                  color: accentColor,
-                  size: responsive.value(mobile: 24, tablet: 26, desktop: 28),
-                ),
-              ),
-              ResponsiveSpacing(mobile: 8, tablet: 10, desktop: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: responsive.bodyFontSize - 2,
-                    color: Colors.grey[700],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              ResponsiveSpacing(mobile: 4, tablet: 5, desktop: 6),
-              Icon(
-                icon,
-                color: Colors.grey.shade400,
-                size: responsive.value(mobile: 16, tablet: 17, desktop: 18),
-              ),
-            ],
-          ),
         ),
       ),
     );
   }
 
-  Widget _buildStepIndicator(int step, bool isActive, Color primary, Responsive responsive) {
-    final isCompleted = step < 3;
+  Widget _buildStepIndicator(
+    int step,
+    bool isActive,
+    Color primary,
+    Responsive responsive,
+  ) {
+    final isCompleted = step < 4;
 
     return Container(
       width: responsive.value(mobile: 32, tablet: 36, desktop: 40),
@@ -720,18 +777,18 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
       child: Center(
         child: isCompleted
             ? Icon(
-          Icons.check,
-          color: Colors.white,
-          size: responsive.value(mobile: 18, tablet: 20, desktop: 22),
-        )
+                Icons.check,
+                color: Colors.white,
+                size: responsive.value(mobile: 18, tablet: 20, desktop: 22),
+              )
             : Text(
-          '$step',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: responsive.bodyFontSize,
-          ),
-        ),
+                '$step',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: responsive.bodyFontSize,
+                ),
+              ),
       ),
     );
   }

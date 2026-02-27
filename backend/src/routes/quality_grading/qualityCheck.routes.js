@@ -19,6 +19,9 @@ const {
 // Step 1: batch information
 router.post("/", auth, createQualityCheck);
 
+// Get quality checks for current user - Added by Ashika
+router.get("/batchdetails", auth, getMyQualityChecks);
+
 // Step 2: IoT density
 router.put("/:id/density", auth, updateDensity);
 
@@ -30,7 +33,5 @@ router.get("/:id/report", auth, getReport);
 
 // Step 4b: download PDF
 router.get("/:id/report/pdf", auth, getPdfReport);
-// Get quality checks for current user - Added by Ashika
-router.get("/batchdetails", auth, getMyQualityChecks);
 
 module.exports = router;
