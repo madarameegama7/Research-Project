@@ -192,7 +192,7 @@ class _PriceNavigationState extends State<PriceNavigation>
                   responsive,
                   title: _currentLanguage == 'si'
                       ? NavigationSi.realMarketPrices
-                      : 'Real Market Prices',
+                      : 'Create the Pepper Batch',
                   subtitle: _currentLanguage == 'si'
                       ? NavigationSi.enterPriceDetails
                       : 'Enter price details of your pepper batch',

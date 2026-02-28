@@ -176,7 +176,7 @@ class _MarketScreenState extends State<MarketScreen> {
         if (product == null) {
           await _service.createProduct(formResult);
         } else {
-          await _service.updateProduct(product.id!, formResult);
+          await _service.updateProduct(product.id, formResult);
         }
         if (mounted) {
           await _loadProducts();

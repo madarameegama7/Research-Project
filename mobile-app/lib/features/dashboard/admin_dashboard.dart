@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../utils/responsive.dart';
-import '../../utils/localization.dart';
-import '../../utils/language_prefs.dart';
 import '../../services/auth_service.dart';
 import '../auth/login_page.dart';
+import '../blockchain/screens/pepper_batches.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -17,7 +16,7 @@ class _AdminDashboardState extends State<AdminDashboard>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  String _currentLanguage = 'en';
+
   String _userName = 'Admin';
 
   final AuthService _authService = AuthService();
@@ -41,36 +40,13 @@ class _AdminDashboardState extends State<AdminDashboard>
         );
 
     _animationController.forward();
-
     _loadUserName();
-
-    // Load saved language preference
-    LanguagePrefs.getLanguage().then((lang) {
-      if (mounted) {
-        setState(() {
-          _currentLanguage = lang;
-        });
-      }
-    });
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
-  }
-
-  // Switch language and save preference
-  void _switchLanguage(String languageCode) {
-    setState(() {
-      _currentLanguage = languageCode;
-    });
-    LanguagePrefs.setLanguage(languageCode);
-  }
-
-  // Simple translation function
-  String _translate(String key) {
-    return AppLocalizations.translate(_currentLanguage, key);
   }
 
   // Convert string to title case
@@ -112,7 +88,7 @@ class _AdminDashboardState extends State<AdminDashboard>
   }
 
   Color _colorWithOpacity(Color color, double opacity) {
-    return color.withValues(alpha: opacity);
+    return color.withOpacity(opacity);
   }
 
   @override
@@ -168,7 +144,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                           desktop: 16,
                         ),
                         Text(
-                          _translate('management_tools'),
+                          'Management Tools',
                           style: TextStyle(
                             fontSize: responsive.headingFontSize,
                             fontWeight: FontWeight.w700,
@@ -222,13 +198,13 @@ class _AdminDashboardState extends State<AdminDashboard>
 
                   ResponsiveSpacing(mobile: 32, tablet: 40, desktop: 48),
 
-                  // Tips or Notices
+                  // Notices
                   Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: responsive.pagePadding,
                     ),
                     child: Text(
-                      _translate('system_notices'),
+                      'System Notices',
                       style: TextStyle(
                         fontSize: responsive.headingFontSize,
                         fontWeight: FontWeight.w700,
@@ -241,19 +217,19 @@ class _AdminDashboardState extends State<AdminDashboard>
 
                   _noticeCard(
                     responsive,
-                    title: _translate('pending_verification'),
+                    title: 'Pending Verification',
                     icon: Icons.pending_actions_rounded,
                     color: Colors.deepOrange,
                   ),
                   _noticeCard(
                     responsive,
-                    title: _translate('server_running'),
+                    title: 'Server Running',
                     icon: Icons.check_circle_rounded,
                     color: Colors.green,
                   ),
                   _noticeCard(
                     responsive,
-                    title: _translate('new_registrations'),
+                    title: 'New Registrations',
                     icon: Icons.person_add_rounded,
                     color: Colors.blue,
                   ),
@@ -268,7 +244,7 @@ class _AdminDashboardState extends State<AdminDashboard>
     );
   }
 
-  /// Build Header
+  /// Build Header (English only)
   Widget _buildHeader(Responsive responsive, Color primary) {
     return Container(
       padding: responsive.padding(
@@ -311,7 +287,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                     Text(
                       "Hello, $_userName 👋",
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.95),
+                        color: Colors.white.withOpacity(0.95),
                         fontSize: responsive.fontSize(
                           mobile: 13,
                           tablet: 15,
@@ -322,7 +298,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                     ),
                     ResponsiveSpacing(mobile: 4, tablet: 6, desktop: 8),
                     Text(
-                      _translate('system_control_panel'),
+                      'System Control Panel',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: responsive.fontSize(
@@ -337,148 +313,107 @@ class _AdminDashboardState extends State<AdminDashboard>
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // Language Switcher
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: _colorWithOpacity(Colors.white, 0.3),
+              PopupMenuButton<String>(
+                icon: Container(
+                  padding: EdgeInsets.all(
+                    responsive.value(mobile: 2, tablet: 3, desktop: 4),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
-                      borderRadius: BorderRadius.circular(6),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: responsive.value(
+                      mobile: 18,
+                      tablet: 22,
+                      desktop: 26,
                     ),
+                    backgroundColor: _colorWithOpacity(primary, 0.1),
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: primary,
+                      size: responsive.value(
+                        mobile: 20,
+                        tablet: 24,
+                        desktop: 28,
+                      ),
+                    ),
+                  ),
+                ),
+                onSelected: (value) async {
+                  if (value == 'logout') {
+                    await AuthService().logout();
+                    if (!mounted) return;
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                      (route) => false,
+                    );
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'profile',
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        _languageButton('EN', 'en', responsive, primary),
-                        Container(
-                          width: 1,
-                          height: responsive.value(
-                            mobile: 20,
-                            tablet: 22,
-                            desktop: 24,
-                          ),
-                          color: Colors.white.withValues(alpha: 0.3),
+                        Icon(
+                          Icons.person_outline,
+                          size: responsive.smallIconSize,
                         ),
-                        _languageButton('සි', 'si', responsive, primary),
-                        Container(
-                          width: 1,
-                          height: responsive.value(
-                            mobile: 20,
-                            tablet: 22,
-                            desktop: 24,
-                          ),
-                          color: Colors.white.withValues(alpha: 0.3),
+                        ResponsiveSpacing.horizontal(
+                          mobile: 10,
+                          tablet: 12,
+                          desktop: 14,
                         ),
-                        _languageButton('தமிழ்', 'ta', responsive, primary),
+                        const Text('Profile'),
                       ],
                     ),
                   ),
-                  ResponsiveSpacing(mobile: 10, tablet: 12, desktop: 14),
-                  PopupMenuButton<String>(
-                    icon: Container(
-                      padding: EdgeInsets.all(
-                        responsive.value(mobile: 2, tablet: 3, desktop: 4),
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: CircleAvatar(
-                        radius: responsive.value(
-                          mobile: 18,
-                          tablet: 22,
-                          desktop: 26,
+                  PopupMenuItem(
+                    value: 'settings',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.settings_outlined,
+                          size: responsive.smallIconSize,
                         ),
-                        backgroundColor: _colorWithOpacity(primary, 0.1),
-                        child: Icon(
-                          Icons.person_rounded,
-                          color: primary,
-                          size: responsive.value(
-                            mobile: 20,
-                            tablet: 24,
-                            desktop: 28,
-                          ),
+                        ResponsiveSpacing.horizontal(
+                          mobile: 10,
+                          tablet: 12,
+                          desktop: 14,
                         ),
-                      ),
+                        const Text('Settings'),
+                      ],
                     ),
-                    onSelected: (value) async {
-                      if (value == 'logout') {
-                        await AuthService().logout();
-                        if (!mounted) return;
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                          (route) => false,
-                        );
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'profile',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.person_outline,
-                              size: responsive.smallIconSize,
-                            ),
-                            ResponsiveSpacing.horizontal(
-                              mobile: 10,
-                              tablet: 12,
-                              desktop: 14,
-                            ),
-                            Text(_translate('profile')),
-                          ],
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.logout,
+                          color: Colors.red,
+                          size: responsive.smallIconSize,
                         ),
-                      ),
-                      PopupMenuItem(
-                        value: 'settings',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.settings_outlined,
-                              size: responsive.smallIconSize,
-                            ),
-                            ResponsiveSpacing.horizontal(
-                              mobile: 10,
-                              tablet: 12,
-                              desktop: 14,
-                            ),
-                            Text(_translate('settings')),
-                          ],
+                        ResponsiveSpacing.horizontal(
+                          mobile: 10,
+                          tablet: 12,
+                          desktop: 14,
                         ),
-                      ),
-                      const PopupMenuDivider(),
-                      PopupMenuItem(
-                        value: 'logout',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.logout,
-                              color: Colors.red,
-                              size: responsive.smallIconSize,
-                            ),
-                            ResponsiveSpacing.horizontal(
-                              mobile: 10,
-                              tablet: 12,
-                              desktop: 14,
-                            ),
-                            Text(
-                              _translate('logout'),
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ],
+                        const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.red),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -487,38 +422,6 @@ class _AdminDashboardState extends State<AdminDashboard>
           ResponsiveSpacing(mobile: 16, tablet: 20, desktop: 24),
           _systemStatusCard(responsive),
         ],
-      ),
-    );
-  }
-
-  // Language Button Widget
-  Widget _languageButton(
-    String label,
-    String languageCode,
-    Responsive responsive,
-    Color primary,
-  ) {
-    final isSelected = _currentLanguage == languageCode;
-
-    return GestureDetector(
-      onTap: () => _switchLanguage(languageCode),
-      child: Container(
-        padding: responsive.padding(
-          mobile: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          tablet: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          desktop: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        ),
-        color: isSelected
-            ? Colors.white.withValues(alpha: 0.25)
-            : Colors.transparent,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            fontSize: responsive.fontSize(mobile: 11, tablet: 12, desktop: 13),
-          ),
-        ),
       ),
     );
   }
@@ -546,7 +449,7 @@ class _AdminDashboardState extends State<AdminDashboard>
           ),
           ResponsiveSpacing.horizontal(mobile: 12, tablet: 14, desktop: 16),
           Text(
-            _translate('system_status'),
+            'System Status',
             style: TextStyle(
               color: Colors.white,
               fontSize: responsive.titleFontSize,
@@ -568,7 +471,7 @@ class _AdminDashboardState extends State<AdminDashboard>
     return [
       _featureCard(
         responsive,
-        title: _translate('users_management'),
+        title: 'Users Management',
         icon: Icons.group_rounded,
         gradient: LinearGradient(
           colors: [Colors.blue.shade400, Colors.blue.shade700],
@@ -577,7 +480,7 @@ class _AdminDashboardState extends State<AdminDashboard>
       ),
       _featureCard(
         responsive,
-        title: _translate('view_reports'),
+        title: 'View Reports',
         icon: Icons.insert_chart_rounded,
         gradient: LinearGradient(
           colors: [Colors.teal.shade400, Colors.teal.shade700],
@@ -586,7 +489,7 @@ class _AdminDashboardState extends State<AdminDashboard>
       ),
       _featureCard(
         responsive,
-        title: _translate('system_analytics'),
+        title: 'System Analytics',
         icon: Icons.analytics_rounded,
         gradient: LinearGradient(
           colors: [Colors.orange.shade400, Colors.orange.shade700],
@@ -595,16 +498,23 @@ class _AdminDashboardState extends State<AdminDashboard>
       ),
       _featureCard(
         responsive,
-        title: _translate('verify_products'),
+        title: 'Verify Pepper Batches',
         icon: Icons.verified_rounded,
         gradient: LinearGradient(
           colors: [Colors.green.shade400, Colors.green.shade700],
         ),
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const VerifyBatchesScreen(),
+            ),
+          );
+        },
       ),
       _featureCard(
         responsive,
-        title: _translate('market_control'),
+        title: 'Market Control',
         icon: Icons.trending_up_rounded,
         gradient: LinearGradient(
           colors: [Colors.purple.shade400, Colors.purple.shade700],
@@ -613,7 +523,7 @@ class _AdminDashboardState extends State<AdminDashboard>
       ),
       _featureCard(
         responsive,
-        title: _translate('blockchain_logs'),
+        title: 'Blockchain Logs',
         icon: Icons.link_rounded,
         gradient: LinearGradient(
           colors: [Colors.red.shade400, Colors.red.shade700],
@@ -628,7 +538,7 @@ class _AdminDashboardState extends State<AdminDashboard>
     required String title,
     required IconData icon,
     required Gradient gradient,
-    required Function onTap,
+    required VoidCallback onTap,
   }) {
     return Material(
       color: Colors.transparent,
@@ -636,7 +546,7 @@ class _AdminDashboardState extends State<AdminDashboard>
         borderRadius: BorderRadius.circular(
           responsive.value(mobile: 20, tablet: 22, desktop: 24),
         ),
-        onTap: () => onTap(),
+        onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
             gradient: gradient,

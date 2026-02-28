@@ -66,20 +66,6 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
       ],
     ),
     HowItWorksPage(
-      title: "AI Visual Analysis - Color",
-      description: "Our AI analyzes color uniformity using LAB color space for precise assessment.",
-      icon: Icons.palette_rounded,
-      color: Colors.pink,
-      details: [
-        "Detects each pepper berry in images",
-        "Converts to LAB color space",
-        "Compares with reference ranges",
-        "Black: brownish to dark blackish",
-        "White: matt grey to pale ivory",
-        "≥95% uniformity = 100 points",
-      ],
-    ),
-    HowItWorksPage(
       title: "AI Visual Analysis - Defects",
       description: "Advanced detection of mold, adulteration, and quality issues using trained neural networks.",
       icon: Icons.bug_report_rounded,
@@ -91,20 +77,6 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
         "Insect damage: Holes and bite marks",
         "Each defect reduces overall grade",
         "Zero tolerance for adulterants",
-      ],
-    ),
-    HowItWorksPage(
-      title: "Shape & Size Analysis",
-      description: "AI measures berry dimensions and identifies undersized or broken pieces.",
-      icon: Icons.straighten_rounded,
-      color: Colors.indigo,
-      details: [
-        "Measures each berry diameter (mm)",
-        "Black pepper: 2.5-7.0 mm acceptable",
-        "White pepper: 2.0-6.0 mm acceptable",
-        "Pinheads: Berries < 2mm (penalty)",
-        "Shape consistency scoring",
-        "Size distribution analysis",
       ],
     ),
     HowItWorksPage(

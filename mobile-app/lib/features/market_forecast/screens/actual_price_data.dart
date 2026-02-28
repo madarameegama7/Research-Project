@@ -6,12 +6,10 @@ import '../../../utils/market forecast/actual_price_data_si.dart';
 import '../../../utils/market forecast/db_translations_si.dart';
 import 'past_price_reports.dart';
 import '../../../services/market_forecast/actual_price_data_service.dart';
-import '../../../services/market_service.dart';
 import '../../../services/market_forecast/quality_check_service.dart';
 import '../widgets/description_info_card.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/date_picker_field.dart';
-import '../widgets/marketplace_prompt_dialog.dart';
 
 class ActualPriceData extends StatefulWidget {
   final Map<String, dynamic>? reportData;
@@ -26,7 +24,6 @@ class _ActualPriceDataState extends State<ActualPriceData> {
   final _formKey = GlobalKey<FormState>();
   final ActualPriceDataService _actualPriceDataService =
       ActualPriceDataService();
-  final MarketService _marketService = MarketService();
   final QualityCheckService _qualityCheckService = QualityCheckService();
 
   // Form controllers
@@ -38,12 +35,7 @@ class _ActualPriceDataState extends State<ActualPriceData> {
 
   // Edit mode
   String? _reportId;
-  String?
-  _newlyCreatedReportId; // Store ID of newly created report for marketplace linking
   bool get _isEditMode => _reportId != null;
-
-  // Store submitted data for marketplace addition
-  Map<String, dynamic>? _lastSubmittedData;
 
   // Dropdown values
   String? _selectedVariety;
@@ -79,26 +71,26 @@ class _ActualPriceDataState extends State<ActualPriceData> {
   List<Map<String, dynamic>> _batches = [];
   String? _selectedBatchId;
 
+  String _currentLanguage = 'en';
+
   @override
   void initState() {
     super.initState();
     _loadReportData();
     _loadBatches();
+
     // Load saved language preference
     LanguagePrefs.getLanguage().then((lang) {
       if (mounted) {
         setState(() {
           _currentLanguage = lang;
         });
-        // Refresh displayed (translated) values after language is known
         _refreshDisplayValues();
       }
     });
   }
 
-  String _currentLanguage = 'en';
-
-  //Load batch Ids
+  // Load batch Ids
   Future<void> _loadBatches() async {
     try {
       final items = await _qualityCheckService.fetchMyQualityChecks();
@@ -120,21 +112,24 @@ class _ActualPriceDataState extends State<ActualPriceData> {
       _priceController.text = (report['pricePerKg'] as num?)?.toString() ?? '';
       _quantityController.text = (report['quantity'] as num?)?.toString() ?? '';
       _notesController.text = report['notes'] as String? ?? '';
+
       _selectedVariety = report['pepperType'] as String?;
       _selectedGrade = report['grade'] as String?;
-      // Show translated values only for display; keep stored values English
+
       _varietyController.text =
           (_selectedVariety != null && _selectedVariety!.isNotEmpty)
           ? (_currentLanguage == 'si'
                 ? MarketForecastSi.translatePepperType(_selectedVariety!)
                 : _selectedVariety!)
           : '';
+
       _gradeController.text =
           (_selectedGrade != null && _selectedGrade!.isNotEmpty)
           ? (_currentLanguage == 'si'
                 ? MarketForecastSi.translateGrade(_selectedGrade!)
                 : _selectedGrade!)
           : '';
+
       _selectedDistrict = report['district'] as String?;
 
       final saleDateStr = report['saleDate'] as String?;
@@ -256,7 +251,7 @@ class _ActualPriceDataState extends State<ActualPriceData> {
         label: Text(
           _currentLanguage == 'si'
               ? ActualPriceDataSi.viewPastRecords
-              : 'View My Past Records',
+              : 'View My Records',
           style: TextStyle(
             fontSize: responsive.bodyFontSize,
             fontWeight: FontWeight.w600,
@@ -336,7 +331,6 @@ class _ActualPriceDataState extends State<ActualPriceData> {
                         (batchInfo['pepperType'] as String?) ?? '';
 
                     if (pepperType.isNotEmpty) {
-                      // Always store the original value (English)
                       final key = pepperType.trim().toLowerCase();
                       if (key.contains('black')) {
                         _selectedVariety = 'Black Pepper';
@@ -345,7 +339,7 @@ class _ActualPriceDataState extends State<ActualPriceData> {
                       } else {
                         _selectedVariety = pepperType;
                       }
-                      // Update display value for controller
+
                       _varietyController.text = (_currentLanguage == 'si')
                           ? MarketForecastSi.translatePepperType(
                               _selectedVariety!,
@@ -598,7 +592,6 @@ class _ActualPriceDataState extends State<ActualPriceData> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    // Only translate for display, never store translated value
                     (value != null && isDistrict && _currentLanguage == 'si')
                         ? MarketForecastSi.translateDistrict(value)
                         : (value ??
@@ -798,11 +791,10 @@ class _ActualPriceDataState extends State<ActualPriceData> {
     );
   }
 
-  // Show friendly message if the user submits an empty form
+  // Submit handler (UPDATED: no marketplace prompt, status only on create)
   Future<void> _handleSubmit() async {
     if (_isSubmitting) return;
 
-    // Check whether relevant inputs are empty / unset
     final bool priceEmpty = _priceController.text.trim().isEmpty;
     final bool quantityEmpty = _quantityController.text.trim().isEmpty;
     final bool notesEmpty = _notesController.text.trim().isEmpty;
@@ -837,11 +829,8 @@ class _ActualPriceDataState extends State<ActualPriceData> {
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    setState(() => _isSubmitting = true);
 
-    // Determine final values for variety and grade
     final gradeValue = (_selectedGrade != null && _selectedGrade!.isNotEmpty)
         ? _selectedGrade
         : (_gradeController.text.trim().isNotEmpty
@@ -855,7 +844,6 @@ class _ActualPriceDataState extends State<ActualPriceData> {
               ? _varietyController.text.trim()
               : null);
 
-    //  Parse price and quantity to double
     final parsedPrice = double.tryParse(_priceController.text.trim());
     final parsedQuantity = double.tryParse(_quantityController.text.trim());
 
@@ -865,7 +853,6 @@ class _ActualPriceDataState extends State<ActualPriceData> {
         ? _selectedDistrict!.trim()
         : null;
 
-    // Payload to sent to backend
     final payload = <String, dynamic>{
       'saleDate': _selectedDate.toIso8601String(),
       'pepperType': pepperValue,
@@ -877,57 +864,22 @@ class _ActualPriceDataState extends State<ActualPriceData> {
       'notes': notes.isNotEmpty ? notes : null,
     };
 
+    // IMPORTANT: only set status for NEW record creation
+    if (!_isEditMode) {
+      payload['currentStatus'] = 'BATCH_CREATED';
+    }
+
     try {
       if (_isEditMode && _reportId != null) {
-        final updatedReport = await _actualPriceDataService
-            .updateActualPriceData(_reportId!, payload);
+        await _actualPriceDataService.updateActualPriceData(
+          _reportId!,
+          payload,
+        );
 
-        _lastSubmittedData = Map<String, dynamic>.from(payload);
+        _clearFormFieldsPreserveSubmission();
 
-        // If the record is already linked to a marketplace product, update it too
-        final marketplaceProductId =
-            updatedReport['marketplaceProductId'] ??
-            (widget.reportData != null
-                ? widget.reportData!['marketplaceProductId']
-                : null);
+        if (!mounted) return;
 
-        if (marketplaceProductId != null && parsedPrice != null) {
-          try {
-            await _marketService
-                .updateProduct(marketplaceProductId.toString(), {
-                  'price': parsedPrice,
-                  'name': pepperValue ?? _lastSubmittedData!['pepperType'],
-                  'unit': 'kg',
-                });
-          } catch (e) {
-            debugPrint('Failed to update marketplace product: $e');
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    _currentLanguage == 'si'
-                        ? '${ActualPriceDataSi.marketplaceUpdateFailed}: $e'
-                        : 'Marketplace update failed: $e',
-                  ),
-                ),
-              );
-            }
-          }
-        }
-      } else {
-        final createdReport = await _actualPriceDataService
-            .createActualPriceData(payload);
-
-        _newlyCreatedReportId =
-            createdReport['_id'] as String? ?? createdReport['id'] as String?;
-        _lastSubmittedData = Map<String, dynamic>.from(payload);
-      }
-
-      _clearFormFieldsPreserveSubmission();
-
-      if (!mounted) return;
-
-      if (_isEditMode) {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -969,7 +921,52 @@ class _ActualPriceDataState extends State<ActualPriceData> {
           ),
         );
       } else {
-        _showMarketplacePrompt();
+        await _actualPriceDataService.createActualPriceData(payload);
+
+        _clearFormFieldsPreserveSubmission();
+
+        if (!mounted) return;
+
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.green.shade600,
+                  size: 28,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _currentLanguage == 'si'
+                      ? ActualPriceDataSi.success
+                      : 'Success',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+            content: Text(
+              _currentLanguage == 'si'
+                  ? 'වාර්තාව සාර්ථකව සුරකින ලදි.'
+                  : 'Record saved successfully.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _resetForm();
+                },
+                child: Text(
+                  _currentLanguage == 'si' ? ActualPriceDataSi.ok : 'OK',
+                ),
+              ),
+            ],
+          ),
+        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -986,300 +983,8 @@ class _ActualPriceDataState extends State<ActualPriceData> {
       );
     } finally {
       if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
+        setState(() => _isSubmitting = false);
       }
-    }
-  }
-
-  // Function to show the marketplace prompt
-  void _showMarketplacePrompt() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => MarketplacePromptDialog(
-        onNoThanks: () {
-          Navigator.pop(context);
-          _resetForm();
-        },
-        onYesAdd: () {
-          Navigator.pop(context);
-          _handleAddToMarketplace();
-        },
-        language: _currentLanguage,
-      ),
-    );
-  }
-
-  // Function to handle adding the product to the marketplace
-  Future<void> _handleAddToMarketplace() async {
-    if (_lastSubmittedData == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error_outline, color: Colors.white),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  _currentLanguage == 'si'
-                      ? ActualPriceDataSi.noDataToAddMarketplace
-                      : 'No data available to add to marketplace',
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.red.shade700,
-        ),
-      );
-      _resetForm();
-      return;
-    }
-
-    // loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        elevation: 8,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Colors.grey.shade50],
-            ),
-          ),
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      const Color(0xFF2E7D32).withOpacity(0.1),
-                      const Color(0xFF2E7D32).withOpacity(0.05),
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFF2E7D32).withOpacity(0.2),
-                    width: 2,
-                  ),
-                ),
-                child: const SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 4,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF2E7D32),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 28),
-              Text(
-                _currentLanguage == 'si'
-                    ? ActualPriceDataSi.addingToMarketplace
-                    : 'Adding to Marketplace',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black87,
-                  letterSpacing: -0.3,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                _currentLanguage == 'si'
-                    ? ActualPriceDataSi.productProcessing
-                    : 'Your product is being processed...',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.black54,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 28),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D32).withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF2E7D32).withOpacity(0.1),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    _buildProgressStep(
-                      _currentLanguage == 'si'
-                          ? ActualPriceDataSi.validatingInformation
-                          : 'Validating Information',
-                      true,
-                      Icons.check_circle,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildProgressStep(
-                      _currentLanguage == 'si'
-                          ? ActualPriceDataSi.addingTheProduct
-                          : 'Adding the Product',
-                      false,
-                      Icons.publish,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                _currentLanguage == 'si'
-                    ? ActualPriceDataSi.pleaseWaitUploading
-                    : 'Please wait while we upload your product',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[500],
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    try {
-      final productData = <String, dynamic>{
-        'name': _lastSubmittedData!['pepperType'],
-        'price': _lastSubmittedData!['pricePerKg'],
-        'unit': 'kg',
-      };
-
-      final createdProduct = await _marketService.createProduct(productData);
-
-      final reportIdToUpdate = _isEditMode ? _reportId : _newlyCreatedReportId;
-      if (reportIdToUpdate != null && createdProduct.id.isNotEmpty) {
-        await _actualPriceDataService.updateActualPriceData(reportIdToUpdate, {
-          'marketplaceProductId': createdProduct.id,
-        });
-      }
-
-      if (mounted) Navigator.pop(context);
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder: (context) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.check_circle_rounded,
-                    color: Colors.green.shade600,
-                    size: 48,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  _currentLanguage == 'si'
-                      ? ActualPriceDataSi.successfullyAdded
-                      : 'Successfully Added!',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  _currentLanguage == 'si'
-                      ? ActualPriceDataSi.productAddedToMarketplace
-                      : 'Your product has been added to the marketplace.',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 14, color: Colors.black54),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _resetForm();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      _currentLanguage == 'si'
-                          ? ActualPriceDataSi.done
-                          : 'Done',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    } catch (e) {
-      if (mounted) Navigator.pop(context);
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error_outline, color: Colors.white),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  _currentLanguage == 'si'
-                      ? '${ActualPriceDataSi.failedToAddMarketplace}: $e'
-                      : 'Failed to add to marketplace: $e',
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          duration: const Duration(seconds: 4),
-        ),
-      );
-      _resetForm();
     }
   }
 
@@ -1308,58 +1013,10 @@ class _ActualPriceDataState extends State<ActualPriceData> {
     _gradeController.clear();
     setState(() {
       _selectedBatchId = null;
-      _varietyController.clear();
-      _gradeController.clear();
       _selectedVariety = null;
       _selectedGrade = null;
       _selectedDistrict = null;
       _selectedDate = DateTime.now();
-      _newlyCreatedReportId = null;
-      _lastSubmittedData = null;
     });
-  }
-
-  // Build progress steps
-  Widget _buildProgressStep(String label, bool isCompleted, IconData icon) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: isCompleted
-                ? const Color(0xFF2E7D32).withOpacity(0.15)
-                : Colors.grey.shade200,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: isCompleted ? const Color(0xFF2E7D32) : Colors.grey.shade400,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: isCompleted ? Colors.black87 : Colors.grey[600],
-            ),
-          ),
-        ),
-        if (isCompleted)
-          const Icon(Icons.done, size: 18, color: Color(0xFF2E7D32))
-        else
-          SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade400),
-            ),
-          ),
-      ],
-    );
   }
 }

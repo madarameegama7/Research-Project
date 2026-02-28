@@ -86,7 +86,7 @@ class SummaryStatisticsCard extends StatelessWidget {
                     Text(
                       language == 'si'
                           ? ActualPriceDataSi.trackHistorical
-                          : 'Track the historical price submissions',
+                          : 'Track the details of pepper batches and price submissions',
                       style: TextStyle(
                         fontSize: responsive.bodyFontSize - 1,
                         color: Colors.black87,

@@ -1,11 +1,7 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../features/certifications/screens/exporter_certifications_dashboard_screen.dart';
-import '../features/certifications/screens/farmer_add_certifications_screen.dart';
-import '../features/certifications/screens/exporter_certification_details_screen.dart';
 import '../features/certifications/screens/farmer_certifications_dashboard_screen.dart';
 import '../services/auth_service.dart';
 import '../features/auth/login_page.dart';

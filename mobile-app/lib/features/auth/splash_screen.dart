@@ -6,8 +6,6 @@ import '../../utils/responsive.dart';
 import '../../widgets/navigation_wrapper.dart';
 import '../auth/login_page.dart';
 import '../dashboard/admin_dashboard.dart';
-import '../dashboard/exporter_dashboard.dart';
-import '../dashboard/farmer_dashboard.dart';
 import '../onboarding/onboarding_screen_one.dart';
 
 class SplashScreen extends StatefulWidget {

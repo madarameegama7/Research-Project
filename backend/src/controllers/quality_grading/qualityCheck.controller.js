@@ -150,7 +150,7 @@ exports.updateDensity = async (req, res) => {
           status: "waiting_images",
         },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!qc) {
@@ -200,7 +200,7 @@ exports.analyzeQualityImages = async (req, res) => {
     // Validate that all 9 required image fields are present
     const files = req.files || {};
     const missing = EXPECTED_FIELDS.filter(
-      (k) => !files[k] || files[k].length === 0
+      (k) => !files[k] || files[k].length === 0,
     );
     if (missing.length > 0) {
       return res.status(400).json({
@@ -235,7 +235,7 @@ exports.analyzeQualityImages = async (req, res) => {
           maxBodyLength: Infinity,
           maxContentLength: Infinity,
           timeout: 120_000, // 2 minutes
-        }
+        },
       );
     } catch (fastapiErr) {
       // FastAPI call itself failed — mark as failed and return 502
@@ -243,7 +243,7 @@ exports.analyzeQualityImages = async (req, res) => {
       await qc.save();
       console.error(
         "analyzeQualityImages — FastAPI error:",
-        fastapiErr?.response?.data || fastapiErr.message
+        fastapiErr?.response?.data || fastapiErr.message,
       );
       return res.status(502).json({
         message: "AI inference service error",
@@ -282,7 +282,7 @@ exports.analyzeQualityImages = async (req, res) => {
     })
       .sort({ createdAt: -1 })
       .select(
-        "certificationType certificateNumber issuingBody issueDate expiryDate attachment"
+        "certificationType certificateNumber issuingBody issueDate expiryDate attachment",
       );
 
     qc.certificatesSnapshot = {
@@ -341,7 +341,7 @@ exports.analyzeQualityImages = async (req, res) => {
     // Mark the quality check as failed so the client knows to retry.
     console.error(
       "analyzeQualityImages — unhandled error:",
-      err?.response?.data || err.message
+      err?.response?.data || err.message,
     );
     try {
       if (id) {
@@ -350,7 +350,7 @@ exports.analyzeQualityImages = async (req, res) => {
     } catch (markFailedErr) {
       console.error(
         "analyzeQualityImages — could not mark as failed:",
-        markFailedErr.message
+        markFailedErr.message,
       );
     }
 
@@ -391,5 +391,117 @@ exports.getMyQualityChecks = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Server error", error: err?.message });
+  }
+};
+
+// GET /api/quality-checks/:id  — fetch a single quality check by ID
+exports.getQualityCheckById = async (req, res) => {
+  try {
+    const firebaseUid = req.user?.uid;
+    if (!firebaseUid) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const dbUser = await findUserByFirebaseUid(firebaseUid);
+    if (!dbUser) {
+      return res.status(404).json({ message: "User not found in DB" });
+    }
+
+    const qc = await QualityCheck.findOne({
+      _id: req.params.id,
+      userId: dbUser._id,
+    });
+
+    if (!qc) {
+      return res.status(404).json({ message: "Quality check not found" });
+    }
+
+    return res.status(200).json({
+      qualityCheckId: qc._id,
+      batchId: qc.batchId,
+      status: qc.status,
+      createdAt: qc.createdAt,
+      batch: qc.batch,
+      density: qc.density,
+      certificatesSnapshot: qc.certificatesSnapshot,
+      results: qc.results,
+    });
+  } catch (err) {
+    console.error("getQualityCheckById error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get quality checks by batchId (no auth required) - Added by Ashika
+exports.getQualityChecksByBatch = async (req, res) => {
+  try {
+    const batchId = (req.params.batchId || req.query.batchId || "")
+      .toString()
+      .trim();
+    if (!batchId) {
+      return res.status(400).json({ message: "Missing batchId" });
+    }
+
+    const checks = await QualityCheck.find({ batchId }).select(
+      "batchId batch results density certificatesSnapshot createdAt updatedAt status",
+    );
+
+    if (!checks || checks.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No quality checks found for batchId" });
+    }
+
+    const payload = checks.map((c) => ({
+      _id: c._id,
+      batchId: c.batchId,
+      batch: c.batch,
+      grade: c.results?.grade ?? null,
+      results: c.results ?? null,
+      density: c.density ?? null,
+      certificatesSnapshot: c.certificatesSnapshot ?? null,
+      status: c.status,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    }));
+
+    return res.status(200).json(payload);
+  } catch (err) {
+    console.error(
+      "getQualityChecksByBatch error:",
+      err && err.stack ? err.stack : err,
+    );
+    return res
+      .status(500)
+      .json({ message: "Server error", error: err?.message });
+  }
+};
+
+// GET /api/quality-checks/dashboard-stats
+// Returns: { totalReports, premiumGrades }
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const firebaseUid = req.user?.uid;
+    if (!firebaseUid) return res.status(401).json({ message: "Unauthorized" });
+
+    const dbUser = await findUserByFirebaseUid(firebaseUid);
+    if (!dbUser)
+      return res.status(404).json({ message: "User not found in DB" });
+
+    const totalReports = await QualityCheck.countDocuments({
+      userId: dbUser._id,
+      status: "completed",
+    });
+
+    const premiumGrades = await QualityCheck.countDocuments({
+      userId: dbUser._id,
+      status: "completed",
+      "results.grade": "Grade 1 - Premium",
+    });
+
+    return res.status(200).json({ totalReports, premiumGrades });
+  } catch (err) {
+    console.error("getDashboardStats error:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };

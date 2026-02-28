@@ -2,7 +2,7 @@ import 'package:CeylonPepper/features/market_forecast/screens/export_price_predi
 import 'package:flutter/material.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/profile_screen.dart';
-import '../blockchain/dashboard.dart';
+import '../blockchain/screens/dashboard.dart';
 import '../../services/auth_service.dart';
 import '../auth/login_page.dart';
 

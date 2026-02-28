@@ -221,14 +221,14 @@ function scoreVarietyPiperine(pepperVariety) {
   const v = (pepperVariety || "").toLowerCase().trim();
 
   const table = {
-    ceylon_pepper: 100,       // 10–12% typical (within 7–15 range) — Med confidence
-    panniyur_1: 40,           // ~4.90% — High confidence (HPLC study)
-    dingi_rala: 40,           // 5.6% — Low confidence (provisional)
-    kohukumbure_rala: 65,     // 6.0% — Low confidence (provisional)
-    bootawe_rala: 65,         // 6.3% — Low confidence (provisional)
-    malabar: 65,              // ~5–7% avg ~6% — Med confidence (multiple sources)
-    kuching: 40,              // ~5% assumed — Low confidence (no primary piperine data)
-    unknown: 60,              // neutral fallback
+    ceylon_pepper: 100, // 10–12% typical (within 7–15 range) — Med confidence
+    panniyur_1: 40, // ~4.90% — High confidence (HPLC study)
+    dingi_rala: 40, // 5.6% — Low confidence (provisional)
+    kohukumbure_rala: 65, // 6.0% — Low confidence (provisional)
+    bootawe_rala: 65, // 6.3% — Low confidence (provisional)
+    malabar: 65, // ~5–7% avg ~6% — Med confidence (multiple sources)
+    kuching: 40, // ~5% assumed — Low confidence (no primary piperine data)
+    unknown: 60, // neutral fallback
   };
 
   return table[v] ?? 60; // default neutral for any unrecognised variety
@@ -266,11 +266,11 @@ function scoreCertBonus(snapshotCount) {
  *   < 50  → REJECT
  */
 function scoreToGrade(score) {
-  if (score >= 90) return "PREMIUM";
-  if (score >= 80) return "GOLD";
-  if (score >= 65) return "SILVER";
-  if (score >= 50) return "BASIC";
-  return "REJECT";
+  if (score >= 90) return "Grade 1 - Premium";
+  if (score >= 80) return "Grade 2 - Gold";
+  if (score >= 65) return "Grade 3 - Silver";
+  if (score >= 50) return "Grade 4 - Basic";
+  return "Reject";
 }
 
 // ─── Improvement tips ────────────────────────────────────────────
@@ -284,37 +284,37 @@ function buildImprovements(raw, factorScores) {
 
   if (raw.adulterantPct > 0)
     tips.push(
-      "Remove adulterant seeds by careful sorting and sieving before packaging."
+      "Remove adulterant seeds by careful sorting and sieving before packaging.",
     );
 
   if (raw.extraneousPct > 2)
     tips.push(
-      "Improve cleaning: remove stones, stems, and foreign matter using sieving and winnowing before packing."
+      "Improve cleaning: remove stones, stems, and foreign matter using sieving and winnowing before packing.",
     );
 
   if (raw.moldPct > 1)
     tips.push(
-      "Reduce mold risk: dry pepper faster to reach safe moisture levels, store in dry ventilated conditions, and avoid damp jute bags."
+      "Reduce mold risk: dry pepper faster to reach safe moisture levels, store in dry ventilated conditions, and avoid damp jute bags.",
     );
 
   if (raw.abnormalTexturePct > 4)
     tips.push(
-      "Reduce broken/abnormal berries: improve threshing technique and post-harvest handling. Use a sieve to remove pinheads and broken pieces."
+      "Reduce broken/abnormal berries: improve threshing technique and post-harvest handling. Use a sieve to remove pinheads and broken pieces.",
     );
 
   if (raw.density < 500)
     tips.push(
-      "Improve bulk density: harvest at full maturity and ensure thorough drying and cleaning. Under-ripe or poorly-dried pepper has lower density."
+      "Improve bulk density: harvest at full maturity and ensure thorough drying and cleaning. Under-ripe or poorly-dried pepper has lower density.",
     );
 
   if (factorScores.varietyPiperine < 65)
     tips.push(
-      "Consider growing high-piperine Ceylon Pepper varieties where soil and climate are suitable. Higher piperine content commands better market prices."
+      "Consider growing high-piperine Ceylon Pepper varieties where soil and climate are suitable. Higher piperine content commands better market prices.",
     );
 
   if (raw.healthyVisualPct < 70)
     tips.push(
-      "A significant portion of berries show quality issues. Improve post-harvest drying and sorting to increase the proportion of healthy berries."
+      "A significant portion of berries show quality issues. Improve post-harvest drying and sorting to increase the proportion of healthy berries.",
     );
 
   // Return at most 5 tips (keep report concise)
@@ -354,7 +354,7 @@ function gradeBatch({
   if (type !== "black") {
     return {
       overallScore: 0,
-      grade: "REJECT",
+      grade: "Reject",
       hardReject: true,
       hardRejectReasons: [
         "Only black pepper grading is implemented in Phase 1. White pepper grading will be added in a future release.",
@@ -385,12 +385,12 @@ function gradeBatch({
 
   if (raw.adulterantPct > 0.5)
     hardRejectReasons.push(
-      `Adulterant seeds detected at ${raw.adulterantPct.toFixed(2)}% (limit: 0.5%). Batch rejected — adulteration is a commercial fraud issue.`
+      `Adulterant seeds detected at ${raw.adulterantPct.toFixed(2)}% (limit: 0.5%). Batch rejected — adulteration is a commercial fraud issue.`,
     );
 
   if (raw.moldPct > 10)
     hardRejectReasons.push(
-      `Mold detected at ${raw.moldPct.toFixed(2)}% (limit: 10%). Batch rejected — high mold level poses safety and health concerns.`
+      `Mold detected at ${raw.moldPct.toFixed(2)}% (limit: 10%). Batch rejected — high mold level poses safety and health concerns.`,
     );
 
   const hardReject = hardRejectReasons.length > 0;
@@ -424,11 +424,11 @@ function gradeBatch({
   //   • Reserved (0.05): For future factors (color, size, insect damage).
   //     For now, add to healthy visual to keep weights summing to 1.
   const weights = {
-    density: 0.20,
+    density: 0.2,
     adulteration: 0.18,
     mold: 0.12,
     extraneous: 0.12,
-    broken: 0.10,
+    broken: 0.1,
     varietyPiperine: 0.09,
     healthyVisual: 0.14, // 0.09 + 0.05 reserved for future factors
     certBonus: 0.05,
@@ -437,7 +437,9 @@ function gradeBatch({
   // Verify weights sum to 1.0 (sanity check — remove in production)
   const weightSum = Object.values(weights).reduce((a, b) => a + b, 0);
   if (Math.abs(weightSum - 1.0) > 0.001) {
-    console.warn(`[gradingEngine] Weights do not sum to 1.0 (sum = ${weightSum.toFixed(4)})`);
+    console.warn(
+      `[gradingEngine] Weights do not sum to 1.0 (sum = ${weightSum.toFixed(4)})`,
+    );
   }
 
   // ── Weighted score ──
@@ -454,7 +456,7 @@ function gradeBatch({
   score = clamp(score, 0, 100);
 
   // ── Apply hard reject override ──
-  const finalGrade = hardReject ? "REJECT" : scoreToGrade(score);
+  const finalGrade = hardReject ? "Reject" : scoreToGrade(score);
 
   // ── Generate improvement tips ──
   const improvements = buildImprovements(raw, factorScores);
@@ -487,11 +489,11 @@ function gradeBatch({
         mold_pct: 10,
       },
       gradeBands: {
-        PREMIUM: "≥ 90",
-        GOLD: "80–89",
-        SILVER: "65–79",
-        BASIC: "50–64",
-        REJECT: "< 50 or hard reject",
+        "Grade 1 - Premium": "≥ 90",
+        "Grade 2 - Gold": "80–89",
+        "Grade 3 - Silver": "65–79",
+        "Grade 4 - Basic": "50–64",
+        Reject: "< 50 or hard reject",
       },
     },
   };
@@ -559,7 +561,7 @@ if (require.main === module) {
         pepperVariety: "ceylon_pepper",
         density: 520,
         factors: {
-          adulterantPct: 0.00,
+          adulterantPct: 0.0,
           extraneousPct: 12.27,
           moldPct: 2.51,
           abnormalTexturePct: 29.42,
@@ -582,7 +584,7 @@ if (require.main === module) {
       console.log("Reasons    :", result.hardRejectReasons);
     console.log("Factor Scores:");
     Object.entries(result.factorScores).forEach(([k, v]) =>
-      console.log(`  ${k.padEnd(18)}: ${v}`)
+      console.log(`  ${k.padEnd(18)}: ${v}`),
     );
     console.log("Improvements:");
     result.improvements.forEach((tip, i) => console.log(`  ${i + 1}. ${tip}`));

@@ -810,8 +810,6 @@ class _FarmerEditCertificationScreenState
     required bool hasExisting,
     required bool hasPicked,
   }) {
-    // same UI as Add page
-    final hasFile = hasPicked;
 
     // what to display
     final displayName = hasPicked

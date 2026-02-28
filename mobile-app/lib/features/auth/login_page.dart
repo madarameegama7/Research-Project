@@ -3,8 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/auth_service.dart';
 import '../../utils/responsive.dart';
 import '../dashboard/admin_dashboard.dart';
-import '../dashboard/exporter_dashboard.dart';
-import '../dashboard/farmer_dashboard.dart';
 import 'forgot_password_page.dart';
 import 'signup_page.dart';
 import '../../widgets/navigation_wrapper.dart';

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/certification_model.dart';
 import '../services/certification_api.dart';
 import 'exporter_certification_details_screen.dart';
 import '../../../utils/responsive.dart';

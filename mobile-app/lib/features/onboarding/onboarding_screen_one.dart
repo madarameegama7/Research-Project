@@ -40,7 +40,6 @@ class _OnboardingScreenOneState extends State<OnboardingScreenOne>
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final primary = const Color(0xFF2E7D32);
-    final lightGreen = const Color(0xFFE8F5E9);
 
     return Scaffold(
       backgroundColor: Colors.white,
