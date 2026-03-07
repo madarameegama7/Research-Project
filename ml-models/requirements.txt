@@ -10,3 +10,6 @@ pillow
 torch
 torchvision
 ultralytics
+xgboost
+tensorflow-cpu
+shap
