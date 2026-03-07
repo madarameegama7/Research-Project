@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 import numpy as np
 import cv2
 
-from inference import run_9_images
+from inference import run_9_images, validate_single_image
 
 app = FastAPI(title="Pepper Quality Inference API")
 
@@ -50,3 +50,17 @@ async def infer_quality(
 
     result = run_9_images(images, texture_first=texture_first)
     return result
+
+@app.post("/infer/validate")
+async def validate_image(file: UploadFile = File(...)):
+    data = await file.read()
+    img = read_imagefile_to_bgr(data)
+    if img is None:
+        raise HTTPException(400, "Invalid image")
+
+    verdict = validate_single_image(img)
+    # verdict example: {"ok": True/False, "pepper_count": 32, "total_objects": 40, "reason": "..."}
+    if not verdict["ok"]:
+        raise HTTPException(400, verdict["reason"])
+
+    return verdict

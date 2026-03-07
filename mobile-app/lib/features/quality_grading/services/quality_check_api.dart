@@ -393,4 +393,37 @@ class QualityCheckApi {
 
     throw Exception(msg);
   }
+
+  // POST /api/quality-checks/validate-image
+  // Used in Step 3 before final submission, to validate a single image (e.g. top view) and show a warning if it's not good enough.
+  Future<void> validateImage({required File image}) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception("Not logged in");
+
+    final token = await user.getIdToken();
+    final uri = Uri.parse(
+      "${ApiConfig.baseUrl}/api/quality-checks/validate-image",
+    );
+
+    final req = http.MultipartRequest("POST", uri);
+    req.headers["Authorization"] = "Bearer $token";
+    req.files.add(await http.MultipartFile.fromPath("image", image.path));
+
+    final streamed = await req.send();
+    final body = await streamed.stream.bytesToString();
+
+    if (streamed.statusCode >= 200 && streamed.statusCode < 300) {
+      return; // ok
+    }
+
+    try {
+      final decoded = jsonDecode(body);
+      final msg = (decoded is Map && decoded["message"] != null)
+          ? decoded["message"].toString()
+          : "Invalid image";
+      throw Exception(msg);
+    } catch (_) {
+      throw Exception("Invalid image");
+    }
+  }
 }

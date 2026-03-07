@@ -185,10 +185,16 @@ class _SummaryConfirmationScreenState extends State<SummaryConfirmationScreen>
         api.getMyVerifiedCertifications(),
       ]);
 
+      final allVerified = (results[1] as List<dynamic>).cast<Map<String, dynamic>>();
+      final validCerts = allVerified.where((c) {
+        final isExpired = c["isExpired"] == true;
+        return !isExpired;
+      }).toList();
+
       if (!mounted) return;
       setState(() {
         _qcData = results[0] as Map<String, dynamic>;
-        _liveCerts = (results[1] as List<dynamic>).cast<Map<String, dynamic>>();
+        _liveCerts = validCerts;
         _isLoading = false;
       });
     } catch (e) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:CeylonPepper/features/market_forecast/screens/navigation.dart';
+import '../auth/login_page.dart';
 import '../disease_detection/screens/home_screen.dart';
 import '../disease_detection/services/weather_service.dart';
 import '../disease_detection/services/location_service.dart';
@@ -8,8 +9,6 @@ import '../../utils/responsive.dart';
 import '../../utils/localization.dart';
 import '../../utils/language_prefs.dart';
 import '../../utils/farmer_dashboard_si.dart';
-import '../auth/login_page.dart';
-import '../marketplace/marketplace_screen.dart';
 import '../quality_grading/screens/quality_grading_dashboard.dart';
 import '../chatbot/chatbot_screen.dart';
 import '../yield_prediction/screens/harvest_prediction_dashboard.dart';
@@ -45,7 +44,6 @@ class _FarmerDashboardState extends State<FarmerDashboard>
   String _currentLanguage = 'en';
   String _userName = "Farmer";
 
-  // Mock data for dashboard statistics
   int _totalCrops = 0;
   int _activeAlerts = 0;
   double _avgQuality = 0.0;
@@ -69,10 +67,8 @@ class _FarmerDashboardState extends State<FarmerDashboard>
         );
 
     _animationController.forward();
-
     _loadUserName();
 
-    // Load saved language preference
     LanguagePrefs.getLanguage().then((lang) {
       if (mounted) {
         setState(() {
@@ -81,10 +77,8 @@ class _FarmerDashboardState extends State<FarmerDashboard>
       }
     });
 
-    // verify assets exist in the bundle (helpful for debugging missing icons)
     _verifyAssets();
 
-    // Load initial data
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         _fetchWeatherData();
@@ -154,11 +148,10 @@ class _FarmerDashboardState extends State<FarmerDashboard>
   }
 
   Future<void> _loadDashboardStats() async {
-    // Simulate loading dashboard statistics
     await Future.delayed(const Duration(milliseconds: 500));
     if (mounted) {
       setState(() {
-        _totalCrops = 5; // Mock data - replace with actual data
+        _totalCrops = 5;
         _activeAlerts = 2;
         _avgQuality = 87.5;
       });
@@ -178,7 +171,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
         onTimeout: () => null,
       );
 
-      double lat = 6.9271; // Colombo fallback
+      double lat = 6.9271;
       double lon = 79.8612;
 
       if (locationData != null) {
@@ -224,7 +217,6 @@ class _FarmerDashboardState extends State<FarmerDashboard>
     }
   }
 
-  // Debug helper: try to load expected icon assets and log failures.
   Future<void> _verifyAssets() async {
     final paths = <String>[
       'assets/images/icons/analysis.png',
@@ -253,6 +245,8 @@ class _FarmerDashboardState extends State<FarmerDashboard>
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      // ── Floating AI Assistant Button ─────────────────────────────
+      floatingActionButton: _buildAIFab(context, responsive, primary),
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -266,7 +260,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Enhanced Header with Weather
+                  // Header with Weather
                   _buildHeader(responsive, primary),
 
                   ResponsiveSpacing(mobile: 20, tablet: 24, desktop: 28),
@@ -276,7 +270,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
 
                   ResponsiveSpacing(mobile: 24, tablet: 28, desktop: 32),
 
-                  // Section: Main Features
+                  // Section: Smart Farming Tools
                   _buildSectionTitle(
                     responsive,
                     primary,
@@ -296,24 +290,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
 
                   ResponsiveSpacing(mobile: 32, tablet: 40, desktop: 48),
 
-                  // Section: Additional Features
-                  _buildSectionTitle(
-                    responsive,
-                    primary,
-                    _currentLanguage == 'si'
-                        ? FarmerDashboardSi.moreServices
-                        : _translate('more_services'),
-                    Icons.dashboard_customize_rounded,
-                  ),
-
-                  ResponsiveSpacing(mobile: 16, tablet: 20, desktop: 24),
-
-                  // Additional Features
-                  _buildAdditionalFeatures(context, responsive, primary),
-
-                  ResponsiveSpacing(mobile: 32, tablet: 40, desktop: 48),
-
-                  // Recommended Tips Section
+                  // Tips Section
                   _buildSectionTitle(
                     responsive,
                     primary,
@@ -328,10 +305,140 @@ class _FarmerDashboardState extends State<FarmerDashboard>
 
                   _buildTipsSection(responsive),
 
-                  ResponsiveSpacing(mobile: 24, tablet: 32, desktop: 40),
+                  // Extra bottom padding so FAB doesn't overlap last tip card
+                  ResponsiveSpacing(mobile: 88, tablet: 96, desktop: 104),
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Pulsing Floating AI Assistant Button ─────────────────────────────────
+  Widget _buildAIFab(
+    BuildContext context,
+    Responsive responsive,
+    Color primary,
+  ) {
+    return _PulsingFAB(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ChatbotScreen()),
+        );
+      },
+      primary: primary,
+      label: _currentLanguage == 'si'
+          ? FarmerDashboardSi.aiAssistant
+          : _translate('ai_assistant'),
+    );
+  }
+
+  // ── Logout Confirmation Dialog ────────────────────────────────────────────
+  void _showLogoutDialog(BuildContext context, Color primary) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.5),
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Avatar + name
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: colorWithOpacity(primary, 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.person_rounded, color: primary, size: 36),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _userName,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _currentLanguage == 'si'
+                    ? 'ඔබට ඇත්තටම පිටවීමට අවශ්‍යද?'
+                    : 'Are you sure you want to log out?',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              // Log out button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    Navigator.of(ctx).pop();
+                    await _authService.logout();
+                    if (!mounted) return;
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                      (route) => false,
+                    );
+                  },
+                  icon: const Icon(Icons.logout_rounded, size: 18),
+                  label: Text(
+                    _currentLanguage == 'si'
+                        ? FarmerDashboardSi.logout
+                        : _translate('logout'),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Cancel button
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    _currentLanguage == 'si' ? 'අවලංගු කරන්න' : 'Cancel',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -411,7 +518,6 @@ class _FarmerDashboardState extends State<FarmerDashboard>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Language Switcher
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(
@@ -433,22 +539,14 @@ class _FarmerDashboardState extends State<FarmerDashboard>
                           color: Colors.white.withValues(alpha: 0.3),
                         ),
                         _languageButton('සි', 'si', responsive, primary),
-                        // Container(
-                        //   width: 1,
-                        //   height: responsive.value(
-                        //     mobile: 20,
-                        //     tablet: 22,
-                        //     desktop: 24,
-                        //   ),
-                        //   color: Colors.white.withValues(alpha: 0.3),
-                        // ),
-                        // _languageButton('தமிழ்', 'ta', responsive, primary),
                       ],
                     ),
                   ),
                   ResponsiveSpacing(mobile: 10, tablet: 12, desktop: 14),
-                  PopupMenuButton<String>(
-                    icon: Container(
+                  // Tap avatar → logout confirmation dialog
+                  GestureDetector(
+                    onTap: () => _showLogoutDialog(context, primary),
+                    child: Container(
                       padding: EdgeInsets.all(
                         responsive.value(mobile: 2, tablet: 3, desktop: 4),
                       ),
@@ -457,7 +555,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
+                            color: Colors.black.withValues(alpha: 0.12),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -481,63 +579,6 @@ class _FarmerDashboardState extends State<FarmerDashboard>
                         ),
                       ),
                     ),
-                    onSelected: (value) async {
-                      if (value == 'logout') {
-                        await _authService.logout();
-                        if (!mounted) return;
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                          (route) => false,
-                        );
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'profile',
-                        child: Row(
-                          children: [
-                            Icon(Icons.person_outline, size: 20),
-                            SizedBox(width: 12),
-                            Text(
-                              _currentLanguage == 'si'
-                                  ? FarmerDashboardSi.profile
-                                  : _translate('profile'),
-                            ),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'settings',
-                        child: Row(
-                          children: [
-                            Icon(Icons.settings_outlined, size: 20),
-                            SizedBox(width: 12),
-                            Text(
-                              _currentLanguage == 'si'
-                                  ? FarmerDashboardSi.settings
-                                  : _translate('settings'),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuDivider(),
-                      PopupMenuItem(
-                        value: 'logout',
-                        child: Row(
-                          children: [
-                            Icon(Icons.logout, color: Colors.red, size: 20),
-                            SizedBox(width: 12),
-                            Text(
-                              _currentLanguage == 'si'
-                                  ? FarmerDashboardSi.logout
-                                  : _translate('logout'),
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
@@ -723,50 +764,42 @@ class _FarmerDashboardState extends State<FarmerDashboard>
       padding: EdgeInsets.symmetric(
         horizontal: responsive.value(mobile: 16, tablet: 24, desktop: 32),
       ),
-      child: ResponsiveBuilder(
-        mobile: _buildStatsRow(responsive, primary),
-        tablet: _buildStatsRow(responsive, primary),
-        desktop: _buildStatsRow(responsive, primary),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              responsive,
+              _currentLanguage == 'si'
+                  ? FarmerDashboardSi.totalCrops
+                  : _translate('total_crops'),
+              _totalCrops.toString(),
+              iconPath: "assets/images/icons/crops.png",
+            ),
+          ),
+          ResponsiveSpacing.horizontal(mobile: 10, tablet: 14, desktop: 18),
+          Expanded(
+            child: _buildStatCard(
+              responsive,
+              _currentLanguage == 'si'
+                  ? FarmerDashboardSi.activeAlerts
+                  : _translate('active_alerts'),
+              _activeAlerts.toString(),
+              iconPath: "assets/images/icons/notification.png",
+            ),
+          ),
+          ResponsiveSpacing.horizontal(mobile: 10, tablet: 14, desktop: 18),
+          Expanded(
+            child: _buildStatCard(
+              responsive,
+              _currentLanguage == 'si'
+                  ? FarmerDashboardSi.avgQuality
+                  : _translate('avg_quality'),
+              "${_avgQuality.toStringAsFixed(1)}%",
+              iconPath: "assets/images/icons/quality.png",
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildStatsRow(Responsive responsive, Color primary) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            responsive,
-            _currentLanguage == 'si'
-                ? FarmerDashboardSi.totalCrops
-                : _translate('total_crops'),
-            _totalCrops.toString(),
-            iconPath: "assets/images/icons/crops.png",
-          ),
-        ),
-        ResponsiveSpacing.horizontal(mobile: 10, tablet: 14, desktop: 18),
-        Expanded(
-          child: _buildStatCard(
-            responsive,
-            _currentLanguage == 'si'
-                ? FarmerDashboardSi.activeAlerts
-                : _translate('active_alerts'),
-            _activeAlerts.toString(),
-            iconPath: "assets/images/icons/notification.png",
-          ),
-        ),
-        ResponsiveSpacing.horizontal(mobile: 10, tablet: 14, desktop: 18),
-        Expanded(
-          child: _buildStatCard(
-            responsive,
-            _currentLanguage == 'si'
-                ? FarmerDashboardSi.avgQuality
-                : _translate('avg_quality'),
-            "${_avgQuality.toStringAsFixed(1)}%",
-            iconPath: "assets/images/icons/quality.png",
-          ),
-        ),
-      ],
     );
   }
 
@@ -809,7 +842,6 @@ class _FarmerDashboardState extends State<FarmerDashboard>
               height: responsive.value(mobile: 38, tablet: 44, desktop: 48),
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
-                debugPrint('Failed to load asset: $iconPath — $error');
                 return Icon(
                   Icons.broken_image,
                   size: responsive.value(mobile: 38, tablet: 44, desktop: 48),
@@ -822,11 +854,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
           Text(
             value,
             style: TextStyle(
-              fontSize: responsive.fontSize(
-                mobile: 16,
-                tablet: 17,
-                desktop: 18,
-              ),
+              fontSize: responsive.fontSize(mobile: 16, tablet: 17, desktop: 18),
               fontWeight: FontWeight.w700,
               color: Colors.grey[800],
             ),
@@ -835,11 +863,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
           Text(
             label,
             style: TextStyle(
-              fontSize: responsive.fontSize(
-                mobile: 11,
-                tablet: 12,
-                desktop: 13,
-              ),
+              fontSize: responsive.fontSize(mobile: 11, tablet: 12, desktop: 13),
               color: Colors.grey[600],
               fontWeight: FontWeight.w500,
             ),
@@ -878,11 +902,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
             child: Text(
               title,
               style: TextStyle(
-                fontSize: responsive.fontSize(
-                  mobile: 17,
-                  tablet: 20,
-                  desktop: 22,
-                ),
+                fontSize: responsive.fontSize(mobile: 17, tablet: 20, desktop: 22),
                 fontWeight: FontWeight.w700,
                 color: Colors.black87,
               ),
@@ -911,21 +931,9 @@ class _FarmerDashboardState extends State<FarmerDashboard>
         mobile: GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
-          crossAxisSpacing: responsive.value(
-            mobile: 12,
-            tablet: 16,
-            desktop: 20,
-          ),
-          mainAxisSpacing: responsive.value(
-            mobile: 12,
-            tablet: 16,
-            desktop: 20,
-          ),
-          childAspectRatio: responsive.value(
-            mobile: 1.05,
-            tablet: 1.1,
-            desktop: 1.15,
-          ),
+          crossAxisSpacing: responsive.value(mobile: 12, tablet: 16, desktop: 20),
+          mainAxisSpacing: responsive.value(mobile: 12, tablet: 16, desktop: 20),
+          childAspectRatio: responsive.value(mobile: 1.05, tablet: 1.1, desktop: 1.15),
           physics: const NeverScrollableScrollPhysics(),
           children: _buildMainFeatureCards(context, responsive),
         ),
@@ -966,7 +974,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
             ? FarmerDashboardSi.forecastHarvest
             : _translate('forecast_harvest'),
         iconPath: "assets/images/icons/analysis.png",
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
             Color.fromARGB(255, 248, 250, 248),
             Color.fromARGB(255, 239, 242, 239),
@@ -991,7 +999,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
             ? FarmerDashboardSi.aiDiagnosis
             : _translate('ai_diagnosis'),
         iconPath: "assets/images/icons/test.png",
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
             Color.fromARGB(255, 248, 250, 248),
             Color.fromARGB(255, 239, 242, 239),
@@ -1011,11 +1019,10 @@ class _FarmerDashboardState extends State<FarmerDashboard>
             ? FarmerDashboardSi.qualityGrading
             : _translate('quality_grading'),
         subtitle: _currentLanguage == 'si'
-            ? FarmerDashboardSi.isoStandards
-            : _translate('iso_standards'),
+            ? FarmerDashboardSi.gradeYourHarvest
+            : _translate('grade_your_harvest'),
         iconPath: "assets/images/icons/check.png",
-
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
             Color.fromARGB(255, 248, 250, 248),
             Color.fromARGB(255, 239, 242, 239),
@@ -1038,7 +1045,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
             ? FarmerDashboardSi.priceTrends
             : _translate('price_trends'),
         iconPath: "assets/images/icons/trend.png",
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
             Color.fromARGB(255, 248, 250, 248),
             Color.fromARGB(255, 239, 242, 239),
@@ -1052,184 +1059,6 @@ class _FarmerDashboardState extends State<FarmerDashboard>
         },
       ),
     ];
-  }
-
-  Widget _buildAdditionalFeatures(
-    BuildContext context,
-    Responsive responsive,
-    Color primary,
-  ) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: responsive.value(mobile: 16, tablet: 24, desktop: 32),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Flexible(
-                flex: 1,
-                child: _secondaryFeatureCard(
-                  context,
-                  responsive,
-                  _currentLanguage == 'si'
-                      ? FarmerDashboardSi.aiAssistant
-                      : _translate('ai_assistant'),
-                  Icons.smart_toy_rounded,
-                  Color(0xFF43A047),
-                  Color(0xFFE8F5E9),
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ChatbotScreen()),
-                    );
-                  },
-                ),
-              ),
-              ResponsiveSpacing.horizontal(mobile: 12, tablet: 16, desktop: 20),
-              Flexible(
-                flex: 1,
-                child: _secondaryFeatureCard(
-                  context,
-                  responsive,
-                  _currentLanguage == 'si'
-                      ? FarmerDashboardSi.marketplace
-                      : _translate('marketplace'),
-                  Icons.store_rounded,
-                  Color(0xFF2E7D32),
-                  Color(0xFFE8F5E9),
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => MarketplaceScreen()),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _secondaryFeatureCard(
-    BuildContext context,
-    Responsive responsive,
-    String title,
-    IconData icon,
-    Color iconColor,
-    Color bgColor,
-    VoidCallback onTap,
-  ) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(
-          responsive.value(mobile: 14, tablet: 18, desktop: 20),
-        ),
-        child: Container(
-          padding: responsive.padding(
-            mobile: const EdgeInsets.all(14),
-            tablet: const EdgeInsets.all(20),
-            desktop: const EdgeInsets.all(24),
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(
-              responsive.value(mobile: 14, tablet: 18, desktop: 20),
-            ),
-            border: Border.all(color: bgColor, width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: colorWithOpacity(Colors.black, 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(
-                  responsive.value(mobile: 10, tablet: 12, desktop: 14),
-                ),
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: responsive.value(mobile: 22, tablet: 24, desktop: 26),
-                ),
-              ),
-              ResponsiveSpacing.horizontal(mobile: 10, tablet: 12, desktop: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: responsive.fontSize(
-                          mobile: 13,
-                          tablet: 14,
-                          desktop: 15,
-                        ),
-                        fontWeight: FontWeight.w700,
-                        color: Colors.grey[800],
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    ResponsiveSpacing(mobile: 2, tablet: 3, desktop: 4),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            _currentLanguage == 'si'
-                                ? FarmerDashboardSi.explore
-                                : _translate('explore'),
-                            style: TextStyle(
-                              fontSize: responsive.fontSize(
-                                mobile: 11,
-                                tablet: 12,
-                                desktop: 13,
-                              ),
-                              color: iconColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        ResponsiveSpacing.horizontal(
-                          mobile: 4,
-                          tablet: 5,
-                          desktop: 6,
-                        ),
-                        Icon(
-                          Icons.arrow_forward_rounded,
-                          color: iconColor,
-                          size: responsive.value(
-                            mobile: 13,
-                            tablet: 14,
-                            desktop: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _featureCard(
@@ -1287,48 +1116,25 @@ class _FarmerDashboardState extends State<FarmerDashboard>
                       ),
                       child: Image.asset(
                         iconPath,
-                        width: responsive.value(
-                          mobile: 32,
-                          tablet: 42,
-                          desktop: 48,
-                        ),
-                        height: responsive.value(
-                          mobile: 32,
-                          tablet: 42,
-                          desktop: 48,
-                        ),
+                        width: responsive.value(mobile: 32, tablet: 42, desktop: 48),
+                        height: responsive.value(mobile: 32, tablet: 42, desktop: 48),
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
-                          debugPrint(
-                            'Failed to load asset: $iconPath — $error',
-                          );
                           return Icon(
                             Icons.broken_image,
-                            size: responsive.value(
-                              mobile: 28,
-                              tablet: 36,
-                              desktop: 40,
-                            ),
+                            size: responsive.value(mobile: 28, tablet: 36, desktop: 40),
                             color: Colors.grey[300],
                           );
                         },
                       ),
                     ),
                     SizedBox(
-                      height: responsive.value(
-                        mobile: 8,
-                        tablet: 10,
-                        desktop: 12,
-                      ),
+                      height: responsive.value(mobile: 8, tablet: 10, desktop: 12),
                     ),
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: responsive.fontSize(
-                          mobile: 13,
-                          tablet: 15,
-                          desktop: 16,
-                        ),
+                        fontSize: responsive.fontSize(mobile: 13, tablet: 15, desktop: 16),
                         fontWeight: FontWeight.w700,
                         color: Colors.black,
                         height: 1.2,
@@ -1337,20 +1143,12 @@ class _FarmerDashboardState extends State<FarmerDashboard>
                       overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(
-                      height: responsive.value(
-                        mobile: 3,
-                        tablet: 4,
-                        desktop: 5,
-                      ),
+                      height: responsive.value(mobile: 3, tablet: 4, desktop: 5),
                     ),
                     Text(
                       subtitle,
                       style: TextStyle(
-                        fontSize: responsive.fontSize(
-                          mobile: 10,
-                          tablet: 11,
-                          desktop: 12,
-                        ),
+                        fontSize: responsive.fontSize(mobile: 10, tablet: 11, desktop: 12),
                         fontWeight: FontWeight.w500,
                         color: Colors.black87,
                       ),
@@ -1496,11 +1294,7 @@ class _FarmerDashboardState extends State<FarmerDashboard>
             text,
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: responsive.fontSize(
-                mobile: 13,
-                tablet: 14,
-                desktop: 15,
-              ),
+              fontSize: responsive.fontSize(mobile: 13, tablet: 14, desktop: 15),
               color: Colors.grey[800],
               height: 1.35,
             ),
@@ -1508,6 +1302,139 @@ class _FarmerDashboardState extends State<FarmerDashboard>
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Pulsing FAB Widget ────────────────────────────────────────────────────────
+class _PulsingFAB extends StatefulWidget {
+  final VoidCallback onTap;
+  final Color primary;
+  final String label;
+
+  const _PulsingFAB({
+    required this.onTap,
+    required this.primary,
+    required this.label,
+  });
+
+  @override
+  State<_PulsingFAB> createState() => _PulsingFABState();
+}
+
+class _PulsingFABState extends State<_PulsingFAB>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1800),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.12).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      // Lift it above the bottom nav bar
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedBuilder(
+          animation: _pulseAnimation,
+          builder: (context, child) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                // Outer glow ring
+                Transform.scale(
+                  scale: _pulseAnimation.value,
+                  child: Container(
+                    width: 68,
+                    height: 68,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorWithOpacity(widget.primary, 0.18),
+                    ),
+                  ),
+                ),
+                // Main FAB button
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF1B5E20),
+                        widget.primary,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colorWithOpacity(widget.primary, 0.45),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.smart_toy_rounded,
+                    color: Colors.white,
+                    size: 26,
+                  ),
+                ),
+                // Small "AI" badge on top-right of the button
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.amber[400],
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorWithOpacity(Colors.black, 0.15),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'AI',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

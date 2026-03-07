@@ -17,6 +17,57 @@ TEXT_CKPT = "models/mobilenetv3_texture_best.pt"
 yolo = YOLO(YOLO_PATH)
 yolo_names = yolo.names
 
+#---------------- Single image pipeline ----------------
+def validate_single_image(image_bgr, conf=0.25, iou=0.5):
+    """
+    Returns:
+      { ok: bool, pepper_count: int, total_objects: int, pepper_ratio: float, reason: str }
+    """
+    res = yolo(image_bgr, conf=conf, iou=iou, verbose=False)[0]
+
+    pepper_count = 0
+    total_objects = 0
+
+    if res.boxes is not None and len(res.boxes) > 0:
+        total_objects = len(res.boxes)
+        for cls in res.boxes.cls:
+            cls_name = yolo_names[int(cls)]
+            if cls_name == "pepper_berry":
+                pepper_count += 1
+
+    pepper_ratio = (pepper_count / total_objects) if total_objects > 0 else 0.0
+
+    # --- thresholds (tune these with your dataset) ---
+    # If it's truly pepper-on-paper, pepper_berry should be detected many times.
+    MIN_PEPPER = 8          # start with 8 (safe for close-up), tune later
+    MIN_RATIO = 0.30        # at least 30% of detections should be pepper
+
+    if pepper_count < MIN_PEPPER:
+        return {
+            "ok": False,
+            "pepper_count": int(pepper_count),
+            "total_objects": int(total_objects),
+            "pepper_ratio": float(pepper_ratio),
+            "reason": "This image does not look like a pepper sample photo. Please capture pepper on a clean white background."
+        }
+
+    if total_objects > 0 and pepper_ratio < MIN_RATIO:
+        return {
+            "ok": False,
+            "pepper_count": int(pepper_count),
+            "total_objects": int(total_objects),
+            "pepper_ratio": float(pepper_ratio),
+            "reason": "Pepper is not clearly visible. Please re-take the photo with better lighting and ensure pepper fills the frame."
+        }
+
+    return {
+        "ok": True,
+        "pepper_count": int(pepper_count),
+        "total_objects": int(total_objects),
+        "pepper_ratio": float(pepper_ratio),
+        "reason": "ok"
+    }
+
 # ---------------- Load MobileNet checkpoints (same as your notebook) ----------------
 def load_mobilenet_ckpt(ckpt_path: str):
     ckpt = torch.load(ckpt_path, map_location=DEVICE)

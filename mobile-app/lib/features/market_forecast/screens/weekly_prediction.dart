@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../../../config/api.dart';
 import '../../../utils/responsive.dart';
 import '../../../utils/language_prefs.dart';
 import '../../../utils/market forecast/db_translations_si.dart';
@@ -114,7 +113,7 @@ class _WeeklyPredictionState extends State<WeeklyPrediction> {
 
   Future<void> fetchPrediction() async {
     final service = PricePredictionService(
-      apiUrl: '${ApiConfig.fastApiBaseUrl}/predictlocalprice',
+      apiUrl: 'http://10.0.2.2:8000/predictlocalprice',
     );
 
     try {

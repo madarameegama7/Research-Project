@@ -505,3 +505,46 @@ exports.getDashboardStats = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+// POST /api/quality-checks/validate-image  — validate a single image (used in Step 3 before final submission)
+exports.validateQualityImage = async (req, res) => {
+  try {
+    const firebaseUid = req.user?.uid;
+    if (!firebaseUid) return res.status(401).json({ message: "Unauthorized" });
+
+    const file = req.file;
+    if (!file) return res.status(400).json({ message: "Missing image" });
+
+    const FormData = require("form-data");
+    const axios = require("axios");
+
+    const form = new FormData();
+    form.append("file", file.buffer, {
+      filename: file.originalname || "image.jpg",
+      contentType: file.mimetype || "image/jpeg",
+    });
+
+    const fastapiRes = await axios.post(
+      `${process.env.FASTAPI_BASE_URL}/infer/validate`,
+      form,
+      { headers: { ...form.getHeaders() }, timeout: 30_000 },
+    );
+
+    return res.status(200).json(fastapiRes.data);
+  } catch (err) {
+    // If FastAPI returned 400 with our "not pepper" reason
+    const status = err?.response?.status || 500;
+    const data = err?.response?.data;
+
+    if (status === 400) {
+      return res.status(400).json({
+        message: data?.detail || "Invalid pepper image",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Validation service error",
+      error: err.message,
+    });
+  }
+};

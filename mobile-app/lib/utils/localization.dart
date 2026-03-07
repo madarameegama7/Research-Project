@@ -28,7 +28,7 @@ class AppLocalizations {
       'disease_detection': 'Disease\nDetection',
       'ai_diagnosis': 'AI diagnosis',
       'quality_grading': 'Quality\nGrading',
-      'iso_standards': 'ISO standards',
+      'grade_your_harvest': 'Grade Your Harvest',
       'market_forecast': 'Market\nForecast',
       'price_trends': 'Price trends',
       'more_services': 'More Services',
@@ -47,7 +47,8 @@ class AppLocalizations {
       // Disease detection screen keys
       'hello_user': 'Hello, {name} 👋',
       'disease_detection_title': 'Disease Detection',
-      'disease_description': 'Access AI-powered disease detection, community posts, and complaint management all in one place.',
+      'disease_description':
+          'Access AI-powered disease detection, community posts, and complaint management all in one place.',
       'explore_features': 'Explore Features',
       'view_posts': 'View Posts',
       'view_posts_subtitle': 'Create and view social posts',
@@ -77,7 +78,8 @@ class AppLocalizations {
       // Image picker screen keys
       'add_photo': 'Add Photo',
       'choose_photo_source': 'Choose Photo Source',
-      'select_how_you_want_to_add_photo': 'Select how you want to add your photo',
+      'select_how_you_want_to_add_photo':
+          'Select how you want to add your photo',
       'take_photo': 'Take Photo',
       'take_photo_with_camera': 'Take a photo using your camera',
       'pick_from_gallery': 'Pick from Gallery',
@@ -149,7 +151,8 @@ class AppLocalizations {
       // Disease detection keys
       'hello_user': 'ආයුබෝවන්, ගොවි මහතා 👋',
       'disease_detection_title': 'රෝග හඳුනාගැනීම',
-      'disease_description': 'AI පදනම්වූ රෝග හඳුනාගැනීම්, පැමිණිලි හා කළමනාකරණ සේවාවන් එකට ලැබෙන තැන.',
+      'disease_description':
+          'AI පදනම්වූ රෝග හඳුනාගැනීම්, පැමිණිලි හා කළමනාකරණ සේවාවන් එකට ලැබෙන තැන.',
       'explore_features': 'විශේෂාංග පරීක්ෂා කරන්න',
       'view_posts': 'පෝස්ට් බලන්න',
       'view_posts_subtitle': 'පෝස්ට් නිර්මාණය සහ බැලීම',
@@ -179,7 +182,8 @@ class AppLocalizations {
       // Image picker screen keys
       'add_photo': 'ඡායාරූපය එකතු කරන්න',
       'choose_photo_source': 'ඡායාරූප නිධිය තෝරන්න',
-      'select_how_you_want_to_add_photo': 'ඡායාරූපයක් එකතු කිරීමට ඇති ආකාර තෝරන්න',
+      'select_how_you_want_to_add_photo':
+          'ඡායාරූපයක් එකතු කිරීමට ඇති ආකාර තෝරන්න',
       'take_photo': 'ඡායාරූපයක් ගන්න',
       'take_photo_with_camera': 'ඔබගේ කැමරාව භාවිතයෙන් ඡායාරූපයක් ගන්න',
       'pick_from_gallery': 'ගැලරිය සිට තෝරන්න',
@@ -216,7 +220,8 @@ class AppLocalizations {
       'market_control': 'சந்தை\nகட்டுப்பாடு',
       'blockchain_logs': 'சங்கிலி\nலாग்கள்',
       'system_notices': 'கணினி அறிவிப்புகள்',
-      'pending_verification': '3 பொருள் சரிபார்ப்பு கோரிக்கைகள் நிலுவையில் உள்ளன',
+      'pending_verification':
+          '3 பொருள் சரிபார்ப்பு கோரிக்கைகள் நிலுவையில் உள்ளன',
       'server_running': 'சேவையகம் சிறப்பாக இயங்குகிறது',
       'new_registrations': 'இந்த வாரத்தில் புதிய பயனர் பதிவுகள்: 42',
       'hello_farmer': 'வணக்கம், விவசாயி 👋',
@@ -251,14 +256,17 @@ class AppLocalizations {
       // Disease detection keys
       'hello_user': 'வணக்கம், {name} 👋',
       'disease_detection_title': 'நோய் கண்டறிதல்',
-      'disease_description': 'AI இயக்கும் நோய் கண்டறிதல்கள், சமூக இடுகைகள் மற்றும் புகார் மேலாண்மை ஒரே இடத்தில்.',
+      'disease_description':
+          'AI இயக்கும் நோய் கண்டறிதல்கள், சமூக இடுகைகள் மற்றும் புகார் மேலாண்மை ஒரே இடத்தில்.',
       'explore_features': 'செயல்பாடுகளை ஆராயுங்கள்',
       'view_posts': 'பதிவுகளை காண்க',
       'view_posts_subtitle': 'சமூக பதிவுகளை உருவாக்கவும் காணவும்',
       'make_complaint': 'ஒரு புகார் பதிவேற்றம்',
-      'make_complaint_subtitle': 'உங்கள் புகார்கள் அல்லது பிரச்சினைகளை சமர்ப்பிக்கவும்',
+      'make_complaint_subtitle':
+          'உங்கள் புகார்கள் அல்லது பிரச்சினைகளை சமர்ப்பிக்கவும்',
       'manage_complaints': 'புகார்கள் நிர்வாகம்',
-      'manage_complaints_subtitle': 'அனைத்து புகார்கள் காணவும் மற்றும் நிர்வகிக்கவும்',
+      'manage_complaints_subtitle':
+          'அனைத்து புகார்கள் காணவும் மற்றும் நிர்வகிக்கவும்',
       'analyze_plants': 'பயிர்களை பகுப்பாய்வு',
       'analyze_plants_subtitle': 'AI உடன் பயிர் நோய்களை கண்டறிக',
       'detection_camera': 'நோய் கண்டறிதல் கேமரா',
@@ -281,9 +289,11 @@ class AppLocalizations {
       // Image picker screen keys
       'add_photo': 'படம் சேர்க்க',
       'choose_photo_source': 'ஃபோட்டோ மூலத்தைத் தேர்ந்தெடுக்கவும்',
-      'select_how_you_want_to_add_photo': 'நீங்கள் ஃபோட்டோவை எவ்வாறு சேர்க்க விரும்புகிறீர்கள் என்பதைத் தேர்ந்தெடுக்கவும்',
+      'select_how_you_want_to_add_photo':
+          'நீங்கள் ஃபோட்டோவை எவ்வாறு சேர்க்க விரும்புகிறீர்கள் என்பதைத் தேர்ந்தெடுக்கவும்',
       'take_photo': 'ஃபோட்டோ எடுக்க',
-      'take_photo_with_camera': 'உங்கள் கேமராவைப் பயன்படுத்தி ஒரு ஃபோட்டோ எடுக்கவும்',
+      'take_photo_with_camera':
+          'உங்கள் கேமராவைப் பயன்படுத்தி ஒரு ஃபோட்டோ எடுக்கவும்',
       'pick_from_gallery': 'கேலரியிலிருந்து தேர்ந்தெடுக்க',
       'select_existing_photo': 'ஒரு பிற்பাதகொண்ட ஃபோட்டோவைத் தேர்ந்தெடுக்கவும்',
       // Weather forecast screen keys

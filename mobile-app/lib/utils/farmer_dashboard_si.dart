@@ -1,7 +1,7 @@
 // Sinhala translations for Farmer Dashboard
 class FarmerDashboardSi {
   // Header / App
-  static const String ceylonPepper = 'Ceylon Pepper';
+  static const String ceylonPepper = 'CeylonPepper';
   static const String hello = 'hello';
 
   // Weather / location
@@ -29,7 +29,7 @@ class FarmerDashboardSi {
   static const String diseaseDetection = 'රෝග හඳුනාගැනීම';
   static const String aiDiagnosis = 'AI රෝග විශ්ලේශනය';
   static const String qualityGrading = 'ගුණාත්මක ශ්‍රේණීකරණය';
-  static const String isoStandards = 'ISO ප්‍රමිතීන්';
+  static const String gradeYourHarvest = "ඔබේ අස්වැන්න ශ්‍රේණිගත කරන්න";
   static const String marketForecast = 'වෙළඳපොළ අනාවැකි';
   static const String priceTrends = 'මිල ප්‍රවණතා';
 

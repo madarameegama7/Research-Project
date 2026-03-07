@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../utils/responsive.dart';
+import '../../../../utils/language_prefs.dart';
+import '../../../../utils/quality_grading/bulk_density_screen2_si.dart';
 import '../../services/quality_check_api.dart';
 import 'certificates_step_screen.dart';
 
@@ -24,6 +26,10 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
 
   bool _isSubmitting = false;
   double? _savedDensity;
+  String _currentLanguage = 'en';
+
+  bool get _isSinhala => _currentLanguage == 'si';
+  String _t(String english, String sinhala) => _isSinhala ? sinhala : english;
 
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
@@ -48,6 +54,10 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
         );
 
     _animationController.forward();
+
+    LanguagePrefs.getLanguage().then((lang) {
+      if (mounted) setState(() => _currentLanguage = lang);
+    });
   }
 
   @override
@@ -87,8 +97,13 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Density saved successfully"),
+        SnackBar(
+          content: Text(
+            _t(
+              'Density saved successfully',
+              BulkDensityScreen2Si.densitySavedSuccess,
+            ),
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -123,9 +138,12 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Bulk Density',
-          style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
+        title: Text(
+          _t('Bulk Density', BulkDensityScreen2Si.bulkDensity),
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
         ),
       ),
       body: GestureDetector(
@@ -161,7 +179,10 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                       ),
                       ResponsiveSpacing(mobile: 12, tablet: 14, desktop: 16),
                       Text(
-                        "Density Measurement",
+                        _t(
+                          'Density Measurement',
+                          BulkDensityScreen2Si.densityMeasurement,
+                        ),
                         style: TextStyle(
                           fontSize: responsive.fontSize(
                             mobile: 22,
@@ -174,7 +195,10 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                       ),
                       ResponsiveSpacing(mobile: 4, tablet: 6, desktop: 8),
                       Text(
-                        "Enter the bulk density manually until the IoT device is available.",
+                        _t(
+                          'Measure and enter the bulk density of the pepper sample manually.',
+                          BulkDensityScreen2Si.densityMeasurementSubtitle,
+                        ),
                         style: TextStyle(
                           fontSize: responsive.bodyFontSize,
                           color: Colors.grey[600],
@@ -198,8 +222,7 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-
-                          // ── Instructions Card (matches reference page) ────
+                          // ── Instructions Card ─────────────────────────────
                           Container(
                             padding: responsive.padding(
                               mobile: const EdgeInsets.all(20),
@@ -249,7 +272,11 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                     ),
                                     Expanded(
                                       child: Text(
-                                        'Measurement Instructions',
+                                        _t(
+                                          'Measurement Instructions',
+                                          BulkDensityScreen2Si
+                                              .measurementInstructions,
+                                        ),
                                         style: TextStyle(
                                           fontSize: responsive.titleFontSize,
                                           fontWeight: FontWeight.w700,
@@ -269,81 +296,38 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                 // Instruction steps
                                 _buildInstructionStep(
                                   number: '1',
-                                  text:
-                                      'Measure the bulk density of the pepper sample using a scale and measuring container.',
+                                  text: _t(
+                                    'Measure the bulk density of the pepper sample using a scale and measuring container.',
+                                    BulkDensityScreen2Si.instruction1,
+                                  ),
                                   responsive: responsive,
                                 ),
                                 const SizedBox(height: 10),
                                 _buildInstructionStep(
                                   number: '2',
-                                  text:
-                                      'Calculate the density in grams per litre (g/L).',
+                                  text: _t(
+                                    'Calculate the density in grams per litre (g/L).',
+                                    BulkDensityScreen2Si.instruction2,
+                                  ),
                                   responsive: responsive,
                                 ),
                                 const SizedBox(height: 10),
                                 _buildInstructionStep(
                                   number: '3',
-                                  text:
-                                      'Enter the value in the field below and tap "Save Density".',
+                                  text: _t(
+                                    'Enter the value in the field below and tap "Save Density".',
+                                    BulkDensityScreen2Si.instruction3,
+                                  ),
                                   responsive: responsive,
                                 ),
                                 const SizedBox(height: 10),
                                 _buildInstructionStep(
                                   number: '4',
-                                  text:
-                                      'Accepted range is 200–900 g/L. Double-check before saving.',
+                                  text: _t(
+                                    'Accepted range is 200–900 g/L. Double-check before saving.',
+                                    BulkDensityScreen2Si.instruction4,
+                                  ),
                                   responsive: responsive,
-                                ),
-
-                                ResponsiveSpacing(
-                                  mobile: 12,
-                                  tablet: 14,
-                                  desktop: 16,
-                                ),
-
-                                // IoT note chip
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: responsive.value(
-                                      mobile: 12,
-                                      tablet: 14,
-                                      desktop: 16,
-                                    ),
-                                    vertical: responsive.value(
-                                      mobile: 8,
-                                      tablet: 9,
-                                      desktop: 10,
-                                    ),
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber.shade50,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: Colors.amber.shade200,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.sensors_rounded,
-                                        color: Colors.amber.shade800,
-                                        size: responsive.smallIconSize,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Flexible(
-                                        child: Text(
-                                          'IoT integration coming soon – manual entry for now.',
-                                          style: TextStyle(
-                                            fontSize:
-                                                responsive.bodyFontSize - 1,
-                                            color: Colors.amber.shade900,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ],
                             ),
@@ -406,7 +390,10 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                     ),
                                     Expanded(
                                       child: Text(
-                                        "Enter Bulk Density",
+                                        _t(
+                                          'Enter Bulk Density',
+                                          BulkDensityScreen2Si.enterBulkDensity,
+                                        ),
                                         style: TextStyle(
                                           fontSize: responsive.titleFontSize,
                                           fontWeight: FontWeight.w700,
@@ -424,7 +411,10 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                 ),
 
                                 Text(
-                                  "Bulk density (g/L)",
+                                  _t(
+                                    'Bulk density (g/L)',
+                                    BulkDensityScreen2Si.bulkDensityLabel,
+                                  ),
                                   style: TextStyle(
                                     color: Colors.grey[700],
                                     fontSize: responsive.bodyFontSize,
@@ -437,13 +427,16 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                   controller: _densityController,
                                   keyboardType:
                                       const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
+                                        decimal: true,
+                                      ),
                                   style: TextStyle(
                                     fontSize: responsive.bodyFontSize + 1,
                                   ),
                                   decoration: InputDecoration(
-                                    hintText: "e.g. 500",
+                                    hintText: _t(
+                                      'e.g. 500',
+                                      BulkDensityScreen2Si.densityHint,
+                                    ),
                                     filled: true,
                                     fillColor: Colors.grey.shade50,
                                     prefixIcon: Icon(
@@ -495,13 +488,23 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                   validator: (value) {
                                     final v = _parseDensity(value ?? "");
                                     if (v == null) {
-                                      return "Please enter a density value";
+                                      return _t(
+                                        'Please enter a density value',
+                                        BulkDensityScreen2Si.pleaseEnterDensity,
+                                      );
                                     }
                                     if (v <= 0) {
-                                      return "Density must be greater than 0";
+                                      return _t(
+                                        'Density must be greater than 0',
+                                        BulkDensityScreen2Si
+                                            .densityMustBePositive,
+                                      );
                                     }
                                     if (v < 200 || v > 900) {
-                                      return "Enter a realistic value (200–900 g/L)";
+                                      return _t(
+                                        'Enter a realistic value (200–900 g/L)',
+                                        BulkDensityScreen2Si.densityOutOfRange,
+                                      );
                                     }
                                     return null;
                                   },
@@ -535,7 +538,10 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                         const SizedBox(width: 10),
                                         Expanded(
                                           child: Text(
-                                            "Saved: ${_savedDensity!.toStringAsFixed(1)} g/L",
+                                            _t(
+                                              'Saved: ${_savedDensity!.toStringAsFixed(1)} g/L',
+                                              'සුරකින ලදී: ${_savedDensity!.toStringAsFixed(1)} g/L',
+                                            ),
                                             style: TextStyle(
                                               fontSize: responsive.bodyFontSize,
                                               color: Colors.green.shade800,
@@ -572,15 +578,12 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                               ],
                             ),
                             child: ElevatedButton(
-                              onPressed:
-                                  _isSubmitting ? null : _submitDensity,
+                              onPressed: _isSubmitting ? null : _submitDensity,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primary,
                                 foregroundColor: Colors.white,
-                                disabledBackgroundColor:
-                                    Colors.grey.shade300,
-                                disabledForegroundColor:
-                                    Colors.grey.shade600,
+                                disabledBackgroundColor: Colors.grey.shade300,
+                                disabledForegroundColor: Colors.grey.shade600,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
@@ -594,7 +597,8 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                         strokeWidth: 2,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                                Colors.white),
+                                              Colors.white,
+                                            ),
                                       ),
                                     )
                                   : Row(
@@ -607,11 +611,13 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          "Save Density",
+                                          _t(
+                                            'Save Density',
+                                            BulkDensityScreen2Si.saveDensity,
+                                          ),
                                           style: TextStyle(
                                             fontWeight: FontWeight.w600,
-                                            fontSize:
-                                                responsive.titleFontSize,
+                                            fontSize: responsive.titleFontSize,
                                           ),
                                         ),
                                       ],
@@ -648,10 +654,10 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                         MaterialPageRoute(
                                           builder: (_) =>
                                               CertificatesStepScreen(
-                                            qualityCheckId:
-                                                widget.qualityCheckId,
-                                            batchId: widget.batchId,
-                                          ),
+                                                qualityCheckId:
+                                                    widget.qualityCheckId,
+                                                batchId: widget.batchId,
+                                              ),
                                         ),
                                       );
                                     }
@@ -659,10 +665,8 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primary,
                                 foregroundColor: Colors.white,
-                                disabledBackgroundColor:
-                                    Colors.grey.shade300,
-                                disabledForegroundColor:
-                                    Colors.grey.shade600,
+                                disabledBackgroundColor: Colors.grey.shade300,
+                                disabledForegroundColor: Colors.grey.shade600,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(28),
@@ -672,7 +676,11 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "Continue to Certification",
+                                    _t(
+                                      'Continue to Certification',
+                                      BulkDensityScreen2Si
+                                          .continueToCertification,
+                                    ),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: responsive.titleFontSize,
@@ -784,14 +792,12 @@ class _BulkDensityScreen2State extends State<BulkDensityScreen2>
     );
   }
 
-  Widget _buildStepLine(
-      bool isActive, Color primary, Responsive responsive) {
+  Widget _buildStepLine(bool isActive, Color primary, Responsive responsive) {
     return Expanded(
       child: Container(
         height: 2,
         margin: EdgeInsets.symmetric(
-          horizontal:
-              responsive.value(mobile: 8, tablet: 10, desktop: 12),
+          horizontal: responsive.value(mobile: 8, tablet: 10, desktop: 12),
         ),
         color: isActive ? primary : Colors.grey[300],
       ),

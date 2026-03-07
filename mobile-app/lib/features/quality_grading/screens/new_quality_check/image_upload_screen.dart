@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../utils/responsive.dart';
 import '../../../../utils/language_prefs.dart';
 import '../../../../utils/quality_grading/image_upload_screen_si.dart';
+import '../../services/quality_check_api.dart';
 import '../image_capture_guide_screen.dart';
 import 'review_and_confirm_screen.dart';
 import 'review_and_confirm_screen.dart' show ImageStore;
@@ -89,8 +90,26 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
     if (source == null) return;
 
     final result = await _picker.pickImage(source: source, imageQuality: 85);
-    if (result != null) {
-      setState(() => images[key] = File(result.path));
+    if (result == null) return;
+
+    final file = File(result.path);
+
+    // validate before saving
+    try {
+      final api = QualityCheckApi();
+      await api.validateImage(image: file);
+
+      if (!mounted) return;
+      setState(() => images[key] = file);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Invalid image: ${e.toString()}"),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
     }
   }
 
