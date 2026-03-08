@@ -8,6 +8,8 @@ import BlockchainDashboard from './pages/Blockchain/BlockchainDashboard';
 import VerifyBatches from './pages/Blockchain/VerifyBatches';
 import VerifyBatchDetails from './pages/Blockchain/VerifyBatchDetails';
 import QRGeneration from './pages/Blockchain/QRGeneration';
+import ComplaintsList from './pages/Complaints/ComplaintsList';
+import ComplaintDetail from './pages/Complaints/ComplaintDetail';
 import './App.css';
 
 function App() {
@@ -19,6 +21,10 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-certificates" element={<VerifyCertificates />} />
         <Route path="/profile" element={<Profile />} />
+
+        {/* Complaints Feature Routes */}
+        <Route path="/complaints" element={<ComplaintsList />} />
+        <Route path="/complaints/:complaintId" element={<ComplaintDetail />} />
 
         {/* Blockchain Feature Routes */}
         <Route path="/blockchain" element={<BlockchainDashboard />} />
