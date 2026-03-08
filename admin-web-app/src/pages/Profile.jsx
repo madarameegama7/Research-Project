@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    LayoutDashboard, LogOut, User, Settings,
+    LayoutDashboard, LogOut, User,
     Badge, Phone, MapPin, Camera, Edit2, ShieldCheck
 } from 'lucide-react';
 import { getProfile, updateProfile } from '../services/api';
+import SharedLayout from '../components/SharedLayout';
 import '../App.css';
 
 export default function Profile() {
@@ -109,18 +110,11 @@ export default function Profile() {
     }
 
     return (
-        <div className="dashboard-layout">
-
-            {/* Sidebar Navigation */}
-            <aside className="sidebar">
-                <div className="sidebar-header">
-                    <div className="brand-logo-small">
-                        <LayoutDashboard size={24} color="#fff" />
-                    </div>
-                    <h2>Farm Admin</h2>
-                </div>
-
-                <nav className="sidebar-nav">
+        <SharedLayout
+            sidebarHeaderIcon={<LayoutDashboard size={24} color="#fff" />}
+            sidebarTitle="Farm Admin"
+            sidebarNav={
+                <>
                     <div className="nav-item" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
                         <LayoutDashboard size={20} />
                         <span>Dashboard</span>
@@ -129,198 +123,192 @@ export default function Profile() {
                         <User size={20} />
                         <span>Profile</span>
                     </div>
-                    <div className="nav-item inactive">
-                        <Settings size={20} />
-                        <span>Settings</span>
-                    </div>
-                </nav>
+                </>
+            }
+            sidebarFooter={
+                <button className="logout-btn" onClick={handleLogout}>
+                    <LogOut size={20} />
+                    <span>Logout</span>
+                </button>
+            }
+        >
 
-                <div className="sidebar-footer">
-                    <button className="logout-btn" onClick={handleLogout}>
-                        <LogOut size={20} />
-                        <span>Logout</span>
-                    </button>
+            {/* Profile Header Banner matching mobile-app _buildHeader */}
+            <header className="profile-banner">
+                <div className="profile-banner-top">
+                    <h2>My Profile</h2>
+                    <div className="role-badge">
+                        <Badge size={16} />
+                        <span>{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Admin'}</span>
+                    </div>
                 </div>
-            </aside>
 
-            {/* Main Content Area */}
-            <main className="main-content">
+                <div className="profile-identity">
 
-                {/* Profile Header Banner matching mobile-app _buildHeader */}
-                <header className="profile-banner">
-                    <div className="profile-banner-top">
-                        <h2>My Profile</h2>
-                        <div className="role-badge">
-                            <Badge size={16} />
-                            <span>{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Admin'}</span>
+                    <div className="avatar-container">
+                        <div className="avatar-circle">
+                            {user?.imageUrl ? (
+                                <img src={user.imageUrl} alt="Profile" />
+                            ) : (
+                                <span className="avatar-initials">{getInitials().toUpperCase()}</span>
+                            )}
                         </div>
-                    </div>
-
-                    <div className="profile-identity">
-
-                        <div className="avatar-container">
-                            <div className="avatar-circle">
-                                {user?.imageUrl ? (
-                                    <img src={user.imageUrl} alt="Profile" />
-                                ) : (
-                                    <span className="avatar-initials">{getInitials().toUpperCase()}</span>
-                                )}
-                            </div>
-                            {/* Disabled avatar upload ring for Admin layout currently. 
+                        {/* Disabled avatar upload ring for Admin layout currently. 
                                 We represent the camera icon structurally, but omit the upload logic 
                                 as it usually requires configuring Firebase Storage on Web specifically.
                             */}
-                            <div className="avatar-edit-icon" title="Editing Avatar not supported in Web Demo">
-                                <Camera size={14} />
-                            </div>
+                        <div className="avatar-edit-icon" title="Editing Avatar not supported in Web Demo">
+                            <Camera size={14} />
+                        </div>
+                    </div>
+
+                    <div className="profile-info">
+                        <h1 className="profile-name">{getFullName()}</h1>
+
+                        <div className="profile-meta-row">
+                            <span className="material-icon">@</span>
+                            <span>{user?.email || 'admin@example.com'}</span>
                         </div>
 
-                        <div className="profile-info">
-                            <h1 className="profile-name">{getFullName()}</h1>
-
+                        {user?.location && (
                             <div className="profile-meta-row">
-                                <span className="material-icon">@</span>
-                                <span>{user?.email || 'admin@example.com'}</span>
+                                <MapPin size={14} />
+                                <span>{user.location}</span>
                             </div>
-
-                            {user?.location && (
-                                <div className="profile-meta-row">
-                                    <MapPin size={14} />
-                                    <span>{user.location}</span>
-                                </div>
-                            )}
-                        </div>
+                        )}
                     </div>
-                </header>
-
-                <div className="content-pad" style={{ marginTop: '2rem' }}>
-
-                    <div className="section-title">
-                        <div className="title-marker" style={{ backgroundColor: 'var(--primary)' }}></div>
-                        <h2>Profile Information</h2>
-                    </div>
-
-                    <div className="info-cards-grid">
-                        <div className="info-card">
-                            <div className="info-icon-wrapper">
-                                <Badge size={22} color="var(--primary)" />
-                            </div>
-                            <div className="info-content">
-                                <h4>Role</h4>
-                                <p>{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Not set'}</p>
-                            </div>
-                        </div>
-
-                        <div className="info-card">
-                            <div className="info-icon-wrapper">
-                                <Phone size={22} color="var(--primary)" />
-                            </div>
-                            <div className="info-content">
-                                <h4>Contact</h4>
-                                <p>{user?.contact || 'Not set'}</p>
-                            </div>
-                        </div>
-
-                        <div className="info-card">
-                            <div className="info-icon-wrapper">
-                                <MapPin size={22} color="var(--primary)" />
-                            </div>
-                            <div className="info-content">
-                                <h4>Location</h4>
-                                <p>{user?.location || 'Not set'}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="section-title" style={{ marginTop: '3rem' }}>
-                        <div className="title-marker" style={{ backgroundColor: 'var(--text-muted)' }}></div>
-                        <h2>Account Actions</h2>
-                    </div>
-
-                    <div className="account-actions-container">
-                        <button className="btn-outline edit-profile-btn" onClick={openEditModal}>
-                            <Edit2 size={18} />
-                            Edit Profile Details
-                        </button>
-                    </div>
-
                 </div>
-            </main>
+            </header>
+
+            <div className="content-pad" style={{ marginTop: '2rem' }}>
+
+                <div className="section-title">
+                    <div className="title-marker" style={{ backgroundColor: 'var(--primary)' }}></div>
+                    <h2>Profile Information</h2>
+                </div>
+
+                <div className="info-cards-grid">
+                    <div className="info-card">
+                        <div className="info-icon-wrapper">
+                            <Badge size={22} color="var(--primary)" />
+                        </div>
+                        <div className="info-content">
+                            <h4>Role</h4>
+                            <p>{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Not set'}</p>
+                        </div>
+                    </div>
+
+                    <div className="info-card">
+                        <div className="info-icon-wrapper">
+                            <Phone size={22} color="var(--primary)" />
+                        </div>
+                        <div className="info-content">
+                            <h4>Contact</h4>
+                            <p>{user?.contact || 'Not set'}</p>
+                        </div>
+                    </div>
+
+                    <div className="info-card">
+                        <div className="info-icon-wrapper">
+                            <MapPin size={22} color="var(--primary)" />
+                        </div>
+                        <div className="info-content">
+                            <h4>Location</h4>
+                            <p>{user?.location || 'Not set'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="section-title" style={{ marginTop: '3rem' }}>
+                    <div className="title-marker" style={{ backgroundColor: 'var(--text-muted)' }}></div>
+                    <h2>Account Actions</h2>
+                </div>
+
+                <div className="account-actions-container">
+                    <button className="btn-outline edit-profile-btn" onClick={openEditModal}>
+                        <Edit2 size={18} />
+                        Edit Profile Details
+                    </button>
+                </div>
+
+            </div>
 
             {/* Edit Profile Modal */}
-            {isEditModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content" style={{ maxWidth: '500px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <div className="icon-circle" style={{ margin: '0', marginRight: '1rem', width: '40px', height: '40px' }}>
-                                <Edit2 size={20} color="var(--primary)" />
+            {
+                isEditModalOpen && (
+                    <div className="modal-overlay">
+                        <div className="modal-content" style={{ maxWidth: '500px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <div className="icon-circle" style={{ margin: '0', marginRight: '1rem', width: '40px', height: '40px' }}>
+                                    <Edit2 size={20} color="var(--primary)" />
+                                </div>
+                                <h3>Edit Profile</h3>
                             </div>
-                            <h3>Edit Profile</h3>
+
+                            <form onSubmit={handleEditSave} className="login-form">
+
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label>First Name</label>
+                                        <div className="input-wrapper">
+                                            <input
+                                                type="text"
+                                                value={editForm.firstName}
+                                                onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label>Last Name</label>
+                                        <div className="input-wrapper">
+                                            <input
+                                                type="text"
+                                                value={editForm.lastName}
+                                                onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Contact Number</label>
+                                    <div className="input-wrapper">
+                                        <Phone className="input-icon" size={20} />
+                                        <input
+                                            type="tel"
+                                            value={editForm.contact}
+                                            onChange={(e) => setEditForm({ ...editForm, contact: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Location</label>
+                                    <div className="input-wrapper">
+                                        <MapPin className="input-icon" size={20} />
+                                        <input
+                                            type="text"
+                                            value={editForm.location}
+                                            onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="modal-actions" style={{ marginTop: '2rem' }}>
+                                    <button type="button" className="btn-cancel" onClick={() => setIsEditModalOpen(false)}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="btn-primary" disabled={isSaving}>
+                                        {isSaving ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-
-                        <form onSubmit={handleEditSave} className="login-form">
-
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <div className="form-group" style={{ flex: 1 }}>
-                                    <label>First Name</label>
-                                    <div className="input-wrapper">
-                                        <input
-                                            type="text"
-                                            value={editForm.firstName}
-                                            onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                                <div className="form-group" style={{ flex: 1 }}>
-                                    <label>Last Name</label>
-                                    <div className="input-wrapper">
-                                        <input
-                                            type="text"
-                                            value={editForm.lastName}
-                                            onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Contact Number</label>
-                                <div className="input-wrapper">
-                                    <Phone className="input-icon" size={20} />
-                                    <input
-                                        type="tel"
-                                        value={editForm.contact}
-                                        onChange={(e) => setEditForm({ ...editForm, contact: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Location</label>
-                                <div className="input-wrapper">
-                                    <MapPin className="input-icon" size={20} />
-                                    <input
-                                        type="text"
-                                        value={editForm.location}
-                                        onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="modal-actions" style={{ marginTop: '2rem' }}>
-                                <button type="button" className="btn-cancel" onClick={() => setIsEditModalOpen(false)}>
-                                    Cancel
-                                </button>
-                                <button type="submit" className="btn-primary" disabled={isSaving}>
-                                    {isSaving ? 'Saving...' : 'Save Changes'}
-                                </button>
-                            </div>
-                        </form>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-        </div>
+        </SharedLayout >
     );
 }

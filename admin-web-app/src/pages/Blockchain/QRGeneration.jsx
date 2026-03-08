@@ -12,6 +12,7 @@ import {
   CheckCircle,
   AlertTriangle,
 } from "lucide-react";
+import SharedLayout from "../../components/SharedLayout";
 import "../../App.css";
 
 export default function QRGeneration() {
@@ -128,17 +129,11 @@ export default function QRGeneration() {
   };
 
   return (
-    <div className="dashboard-layout" style={{ position: "relative" }}>
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="brand-logo-small">
-            <ShieldCheck size={24} color="#fff" />
-          </div>
-          <h2>Admin Portal</h2>
-        </div>
-
-        <nav className="sidebar-nav">
+    <SharedLayout
+      sidebarHeaderIcon={<ShieldCheck size={24} color="#fff" />}
+      sidebarTitle="Admin Portal"
+      sidebarNav={
+        <>
           <div
             className="nav-item"
             onClick={() => navigate("/dashboard")}
@@ -147,7 +142,6 @@ export default function QRGeneration() {
             <ArrowLeft size={20} />
             <span>Back to Dashboard</span>
           </div>
-
           <div
             className="nav-item"
             onClick={() => navigate("/blockchain")}
@@ -156,12 +150,10 @@ export default function QRGeneration() {
             <CheckCircle size={20} />
             <span>Blockchain System</span>
           </div>
-
           <div className="nav-item active">
             <QrCode size={20} />
             <span>Generate QR</span>
           </div>
-
           <div
             className="nav-item"
             onClick={() => navigate("/blockchain/verify-batches")}
@@ -170,11 +162,10 @@ export default function QRGeneration() {
             <CheckCircle size={20} />
             <span>Verify Batches</span>
           </div>
-        </nav>
-      </aside>
-
-      {/* Main */}
-      <main className="main-content">
+        </>
+      }
+    >
+      <div style={{ position: "relative", display: "contents" }}>
         <header
           className="dashboard-header"
           style={{ marginBottom: "1.25rem" }}
@@ -432,194 +423,194 @@ export default function QRGeneration() {
             </div>
           )}
         </div>
-      </main>
 
-      {/* Confirm Modal */}
-      {confirmOpen && confirmBatch && (
-        <div className="modal-overlay" onClick={() => setConfirmOpen(false)}>
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: 520 }}
-          >
-            <div className="modal-header">
-              <h2
-                style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}
-              >
-                Generate QR Code
-              </h2>
-            </div>
-
-            <div style={{ paddingTop: "0.25rem" }}>
-              <p
-                style={{
-                  margin: "0 0 0.75rem 0",
-                  color: "#334155",
-                  lineHeight: 1.6,
-                }}
-              >
-                You’re about to generate a QR code for:
-              </p>
-
-              <div
-                style={{
-                  border: "1px solid #e2e8f0",
-                  background: "#f8fafc",
-                  borderRadius: 12,
-                  padding: "0.9rem",
-                }}
-              >
-                <div style={{ color: "#64748b", fontSize: "0.85rem" }}>
-                  Batch ID
-                </div>
-                <div style={{ color: "#0f172a", fontWeight: 600 }}>
-                  {confirmBatch.batchId || "-"}
-                </div>
-                <div
-                  style={{
-                    marginTop: 8,
-                    color: "#64748b",
-                    fontSize: "0.85rem",
-                  }}
+        {/* Confirm Modal */}
+        {confirmOpen && confirmBatch && (
+          <div className="modal-overlay" onClick={() => setConfirmOpen(false)}>
+            <div
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: 520 }}
+            >
+              <div className="modal-header">
+                <h2
+                  style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}
                 >
-                  Verified on
-                </div>
-                <div style={{ color: "#0f172a", fontWeight: 600 }}>
-                  {formatDate(confirmBatch.saleDate)}
-                </div>
+                  Generate QR Code
+                </h2>
               </div>
 
-              <p
-                style={{
-                  margin: "0.9rem 0 0 0",
-                  color: "#334155",
-                  lineHeight: 1.6,
-                }}
-              >
-                This will mark the batch as ready for exporters to scan.
-                Continue?
-              </p>
-            </div>
+              <div style={{ paddingTop: "0.25rem" }}>
+                <p
+                  style={{
+                    margin: "0 0 0.75rem 0",
+                    color: "#334155",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  You’re about to generate a QR code for:
+                </p>
 
-            <div
-              className="modal-footer"
-              style={{
-                marginTop: "1.25rem",
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "0.75rem",
-              }}
-            >
-              <button
-                className="btn btn-outline"
-                onClick={() => setConfirmOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={confirmGenerate}
+                <div
+                  style={{
+                    border: "1px solid #e2e8f0",
+                    background: "#f8fafc",
+                    borderRadius: 12,
+                    padding: "0.9rem",
+                  }}
+                >
+                  <div style={{ color: "#64748b", fontSize: "0.85rem" }}>
+                    Batch ID
+                  </div>
+                  <div style={{ color: "#0f172a", fontWeight: 600 }}>
+                    {confirmBatch.batchId || "-"}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 8,
+                      color: "#64748b",
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    Verified on
+                  </div>
+                  <div style={{ color: "#0f172a", fontWeight: 600 }}>
+                    {formatDate(confirmBatch.saleDate)}
+                  </div>
+                </div>
+
+                <p
+                  style={{
+                    margin: "0.9rem 0 0 0",
+                    color: "#334155",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  This will mark the batch as ready for exporters to scan.
+                  Continue?
+                </p>
+              </div>
+
+              <div
+                className="modal-footer"
                 style={{
-                  backgroundColor: "#475569",
-                  borderRadius: "10px",
-                  padding: "0.65rem 0.95rem",
+                  marginTop: "1.25rem",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "0.75rem",
                 }}
               >
-                Yes, Generate
-              </button>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => setConfirmOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={confirmGenerate}
+                  style={{
+                    backgroundColor: "#475569",
+                    borderRadius: "10px",
+                    padding: "0.65rem 0.95rem",
+                  }}
+                >
+                  Yes, Generate
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Toast message */}
-      {toast && (
-        <div
-          style={{
-            position: "fixed",
-            right: 18,
-            bottom: 18,
-            zIndex: 2000,
-            width: "min(420px, calc(100vw - 36px))",
-            background: "#fff",
-            border: "1px solid #e5e7eb",
-            borderRadius: 14,
-            boxShadow: "0 18px 40px rgba(0,0,0,0.16)",
-            padding: "0.9rem 1rem",
-            display: "flex",
-            gap: "0.75rem",
-            alignItems: "flex-start",
-          }}
-        >
+        {/* Toast message */}
+        {toast && (
           <div
             style={{
-              width: 36,
-              height: 36,
-              borderRadius: 12,
+              position: "fixed",
+              right: 18,
+              bottom: 18,
+              zIndex: 2000,
+              width: "min(420px, calc(100vw - 36px))",
+              background: "#fff",
+              border: "1px solid #e5e7eb",
+              borderRadius: 14,
+              boxShadow: "0 18px 40px rgba(0,0,0,0.16)",
+              padding: "0.9rem 1rem",
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: toast.type === "success" ? "#ecfdf5" : "#fef2f2",
-              border: `1px solid ${toast.type === "success" ? "#bbf7d0" : "#fecaca"}`,
-              flexShrink: 0,
+              gap: "0.75rem",
+              alignItems: "flex-start",
             }}
           >
-            {toast.type === "success" ? (
-              <CheckCircle size={18} color="#16a34a" />
-            ) : (
-              <AlertTriangle size={18} color="#dc2626" />
-            )}
-          </div>
-
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ color: "#0f172a", fontWeight: 600 }}>
-              {toast.title}
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: toast.type === "success" ? "#ecfdf5" : "#fef2f2",
+                border: `1px solid ${toast.type === "success" ? "#bbf7d0" : "#fecaca"}`,
+                flexShrink: 0,
+              }}
+            >
+              {toast.type === "success" ? (
+                <CheckCircle size={18} color="#16a34a" />
+              ) : (
+                <AlertTriangle size={18} color="#dc2626" />
+              )}
             </div>
-            <div style={{ marginTop: 2, color: "#475569", lineHeight: 1.45 }}>
-              {toast.message}
-            </div>
-          </div>
 
-          <button
-            onClick={() => setToast(null)}
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ color: "#0f172a", fontWeight: 600 }}>
+                {toast.title}
+              </div>
+              <div style={{ marginTop: 2, color: "#475569", lineHeight: 1.45 }}>
+                {toast.message}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setToast(null)}
+              style={{
+                border: "none",
+                background: "#f1f5f9",
+                width: 34,
+                height: 34,
+                borderRadius: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+              title="Close"
+            >
+              <X size={18} color="#475569" />
+            </button>
+          </div>
+        )}
+
+        {/* Loading Overlay */}
+        {actionLoading && (
+          <div
             style={{
-              border: "none",
-              background: "#f1f5f9",
-              width: 34,
-              height: 34,
-              borderRadius: 10,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(255,255,255,0.7)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              cursor: "pointer",
-              flexShrink: 0,
+              zIndex: 1000,
             }}
-            title="Close"
           >
-            <X size={18} color="#475569" />
-          </button>
-        </div>
-      )}
-
-      {/* Loading Overlay */}
-      {actionLoading && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(255,255,255,0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <RefreshCw size={32} className="spin" color="var(--primary)" />
-        </div>
-      )}
-    </div>
+            <RefreshCw size={32} className="spin" color="var(--primary)" />
+          </div>
+        )}
+      </div>
+    </SharedLayout >
   );
 }

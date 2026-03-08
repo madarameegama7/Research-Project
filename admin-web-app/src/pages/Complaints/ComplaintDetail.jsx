@@ -18,6 +18,7 @@ import {
   subscribeComplaintById,
   updateComplaintStatus,
 } from '../../services/complaints';
+import SharedLayout from '../../components/SharedLayout';
 import '../../App.css';
 
 const statusConfig = {
@@ -147,15 +148,11 @@ export default function ComplaintDetail() {
   };
 
   return (
-    <div className="dashboard-layout" onClick={() => setShowMenuDropdown(false)}>
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="brand-logo-small">
-            <MessageSquareMore size={24} color="#fff" />
-          </div>
-          <h2>Admin Portal</h2>
-        </div>
-        <nav className="sidebar-nav">
+    <SharedLayout
+      sidebarHeaderIcon={<MessageSquareMore size={24} color="#fff" />}
+      sidebarTitle="Admin Portal"
+      sidebarNav={
+        <>
           <div className="nav-item" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
             <ArrowLeft size={20} />
             <span>Back to Dashboard</span>
@@ -168,10 +165,10 @@ export default function ComplaintDetail() {
             <Clock size={20} />
             <span>Complaint Details</span>
           </div>
-        </nav>
-      </aside>
-
-      <main className="main-content">
+        </>
+      }
+    >
+      <div onClick={() => setShowMenuDropdown(false)} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div className="dashboard-header" style={{ position: 'relative' }}>
           <div className="header-text">
             <div className="greeting">Complaint Review</div>
@@ -317,7 +314,7 @@ export default function ComplaintDetail() {
             </div>
           )}
         </div>
-      </main>
+      </div>
 
       {/* Status Update Dialog */}
       {showStatusDialog && (
@@ -363,7 +360,7 @@ export default function ComplaintDetail() {
           </div>
         </div>
       )}
-    </div>
+    </SharedLayout>
   );
 }
 

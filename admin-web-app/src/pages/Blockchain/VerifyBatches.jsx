@@ -18,6 +18,7 @@ import {
   Calendar,
   Tag,
 } from "lucide-react";
+import SharedLayout from "../../components/SharedLayout";
 import "../../App.css";
 
 export default function VerifyBatches() {
@@ -141,17 +142,11 @@ export default function VerifyBatches() {
   const clearSearch = () => setSearchQuery(""); // Clear search input and reset query
 
   return (
-    <div className="dashboard-layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="brand-logo-small">
-            <ShieldCheck size={24} color="#fff" />
-          </div>
-          <h2>Admin Portal</h2>
-        </div>
-
-        <nav className="sidebar-nav">
+    <SharedLayout
+      sidebarHeaderIcon={<ShieldCheck size={24} color="#fff" />}
+      sidebarTitle="Admin Portal"
+      sidebarNav={
+        <>
           <div
             className="nav-item"
             onClick={() => navigate("/dashboard")}
@@ -160,7 +155,6 @@ export default function VerifyBatches() {
             <ArrowLeft size={20} />
             <span>Back to Dashboard</span>
           </div>
-
           <div
             className="nav-item"
             onClick={() => navigate("/blockchain")}
@@ -169,12 +163,10 @@ export default function VerifyBatches() {
             <CheckCircle size={20} />
             <span>Blockchain System</span>
           </div>
-
           <div className="nav-item active">
             <CheckCircle size={20} />
             <span>Verify Batches</span>
           </div>
-
           <div
             className="nav-item"
             onClick={() => navigate("/blockchain/generate-qr")}
@@ -183,448 +175,444 @@ export default function VerifyBatches() {
             <QrCode size={20} />
             <span>Generate QR</span>
           </div>
-        </nav>
-      </aside>
+        </>
+      }
+    >
+      <header className="dashboard-header">
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <button
+            onClick={() => navigate("/blockchain")}
+            className="btn btn-outline"
+            style={{
+              padding: "0.6rem",
+              borderRadius: "14px",
+              background: "white",
+              border: "1px solid #e5e7eb",
+              boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
+            }}
+            title="Back"
+          >
+            <ArrowLeft size={22} />
+          </button>
+          <div>
+            <h1 style={{ margin: "0.25rem 0 0 0" }}>Verify Pepper Batches</h1>
+          </div>
+        </div>
+      </header>
 
-      {/* Main */}
-      <main className="main-content">
-        <header className="dashboard-header">
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+      <div className="content-pad">
+        {/* Search + Filters */}
+        <div style={{ marginBottom: "1.5rem" }}>
+          {/* Search Bar */}
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 320px" }}>
+              <div
+                style={{
+                  background: "white",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "16px",
+                  padding: "0.9rem 1rem",
+                  boxShadow: "0 10px 22px rgba(0,0,0,0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                }}
+              >
+                <Search size={20} color="#64748b" />
+                <input
+                  type="text"
+                  placeholder="Search here..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    outline: "none",
+                    fontSize: "0.95rem",
+                    color: "#0f172a",
+                    background: "transparent",
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={clearSearch}
+                    title="Clear"
+                    style={{
+                      border: "none",
+                      background: "#f1f5f9",
+                      width: "34px",
+                      height: "34px",
+                      borderRadius: "10px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <X size={18} color="#475569" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Chips */}
+          <div
+            style={{
+              marginTop: "1rem",
+              display: "flex",
+              gap: "0.75rem",
+              flexWrap: "wrap",
+            }}
+          >
+            {["VERIFIED", "NOT_VERIFIED"].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                style={{
+                  padding: "0.5rem 1rem",
+                  borderRadius: "999px",
+                  border: `1px solid ${statusFilter === status
+                      ? getStatusColor(status)
+                      : "#e2e8f0"
+                    }`,
+                  backgroundColor:
+                    statusFilter === status
+                      ? `${getStatusColor(status)}18`
+                      : "white",
+                  color:
+                    statusFilter === status
+                      ? getStatusColor(status)
+                      : "#0f172a",
+                  fontWeight: statusFilter === status ? "800" : "600",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                {status === "VERIFIED" ? "Verified" : "Not Verified"}
+              </button>
+            ))}
+          </div>
+
+          {/* Refresh Button */}
+          <div
+            style={{
+              marginTop: "1rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "1rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ color: "#64748b", fontSize: "0.9rem" }}>
+              Showing <b>{filteredBatches.length}</b> of{" "}
+              <b>{totalAvailable}</b> batches
+            </div>
+
             <button
-              onClick={() => navigate("/blockchain")}
+              onClick={loadBatches}
+              disabled={loading}
               className="btn btn-outline"
               style={{
-                padding: "0.6rem",
-                borderRadius: "14px",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
                 background: "white",
                 border: "1px solid #e5e7eb",
                 boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
+                borderRadius: "14px",
+                padding: "0.65rem 1rem",
+                cursor: loading ? "not-allowed" : "pointer",
               }}
-              title="Back"
             >
-              <ArrowLeft size={22} />
+              <RefreshCw size={18} className={loading ? "spin" : ""} />
+              Refresh
             </button>
-            <div>
-              <h1 style={{ margin: "0.25rem 0 0 0" }}>Verify Pepper Batches</h1>
-            </div>
           </div>
-        </header>
+        </div>
 
-        <div className="content-pad">
-          {/* Search + Filters */}
-          <div style={{ marginBottom: "1.5rem" }}>
-            {/* Search Bar */}
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-              <div style={{ flex: "1 1 320px" }}>
+        {/* Results */}
+        {loading ? (
+          <div className="loading-screen" style={{ minHeight: "260px" }}>
+            Loading Batches...
+          </div>
+        ) : error ? (
+          <div className="notice-card error">
+            <Filter size={20} />
+            <span>{error}</span>
+          </div>
+        ) : filteredBatches.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "4rem 2rem",
+              backgroundColor: "#f8fafc",
+              borderRadius: "12px",
+              border: "1px dashed #cbd5e1",
+            }}
+          >
+            <Inbox
+              size={48}
+              color="#94a3b8"
+              style={{ marginBottom: "1rem" }}
+            />
+            <h3>No batches found</h3>
+            <p style={{ color: "#64748b" }}>
+              Try adjusting your filters or search keywords.
+            </p>
+          </div>
+        ) : (
+          <div
+            className="batch-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: "1rem",
+            }}
+          >
+            {filteredBatches.map((batch) => {
+              const statusColor = getStatusColor(batch.currentStatus);
+
+              return (
                 <div
+                  key={batch._id}
+                  onClick={() =>
+                    navigate(`/blockchain/verify-batches/${batch._id}`, {
+                      state: { batch },
+                    })
+                  }
                   style={{
                     background: "white",
-                    border: "1px solid #e5e7eb",
                     borderRadius: "16px",
-                    padding: "0.9rem 1rem",
-                    boxShadow: "0 10px 22px rgba(0,0,0,0.08)",
+                    padding: "1rem 1rem",
+                    boxShadow: "0 8px 18px rgba(0,0,0,0.06)",
+                    border: "1px solid #eef2f7",
+                    cursor: "pointer",
+                    transition: "transform 0.2s, box-shadow 0.2s",
                     display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
+                    flexDirection: "column",
+                    gap: "0.85rem",
+                    position: "relative",
+                    overflow: "hidden",
+                    minHeight: "190px",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 14px 26px rgba(0,0,0,0.10)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow =
+                      "0 8px 18px rgba(0,0,0,0.06)";
                   }}
                 >
-                  <Search size={20} color="#64748b" />
-                  <input
-                    type="text"
-                    placeholder="Search here..."
-                    value={searchQuery}
-                    onChange={handleSearchChange}
+                  {/* Accent bar */}
+                  <div
                     style={{
-                      flex: 1,
-                      border: "none",
-                      outline: "none",
-                      fontSize: "0.95rem",
-                      color: "#0f172a",
-                      background: "transparent",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: "5px",
+                      background: statusColor,
                     }}
                   />
-                  {searchQuery && (
-                    <button
-                      onClick={clearSearch}
-                      title="Clear"
-                      style={{
-                        border: "none",
-                        background: "#f1f5f9",
-                        width: "34px",
-                        height: "34px",
-                        borderRadius: "10px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <X size={18} color="#475569" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
 
-            {/* Filter Chips */}
-            <div
-              style={{
-                marginTop: "1rem",
-                display: "flex",
-                gap: "0.75rem",
-                flexWrap: "wrap",
-              }}
-            >
-              {["VERIFIED", "NOT_VERIFIED"].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  style={{
-                    padding: "0.5rem 1rem",
-                    borderRadius: "999px",
-                    border: `1px solid ${
-                      statusFilter === status
-                        ? getStatusColor(status)
-                        : "#e2e8f0"
-                    }`,
-                    backgroundColor:
-                      statusFilter === status
-                        ? `${getStatusColor(status)}18`
-                        : "white",
-                    color:
-                      statusFilter === status
-                        ? getStatusColor(status)
-                        : "#0f172a",
-                    fontWeight: statusFilter === status ? "800" : "600",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {status === "VERIFIED" ? "Verified" : "Not Verified"}
-                </button>
-              ))}
-            </div>
-
-            {/* Refresh Button */}
-            <div
-              style={{
-                marginTop: "1rem",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: "1rem",
-                flexWrap: "wrap",
-              }}
-            >
-              <div style={{ color: "#64748b", fontSize: "0.9rem" }}>
-                Showing <b>{filteredBatches.length}</b> of{" "}
-                <b>{totalAvailable}</b> batches
-              </div>
-
-              <button
-                onClick={loadBatches}
-                disabled={loading}
-                className="btn btn-outline"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  background: "white",
-                  border: "1px solid #e5e7eb",
-                  boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
-                  borderRadius: "14px",
-                  padding: "0.65rem 1rem",
-                  cursor: loading ? "not-allowed" : "pointer",
-                }}
-              >
-                <RefreshCw size={18} className={loading ? "spin" : ""} />
-                Refresh
-              </button>
-            </div>
-          </div>
-
-          {/* Results */}
-          {loading ? (
-            <div className="loading-screen" style={{ minHeight: "260px" }}>
-              Loading Batches...
-            </div>
-          ) : error ? (
-            <div className="notice-card error">
-              <Filter size={20} />
-              <span>{error}</span>
-            </div>
-          ) : filteredBatches.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "4rem 2rem",
-                backgroundColor: "#f8fafc",
-                borderRadius: "12px",
-                border: "1px dashed #cbd5e1",
-              }}
-            >
-              <Inbox
-                size={48}
-                color="#94a3b8"
-                style={{ marginBottom: "1rem" }}
-              />
-              <h3>No batches found</h3>
-              <p style={{ color: "#64748b" }}>
-                Try adjusting your filters or search keywords.
-              </p>
-            </div>
-          ) : (
-            <div
-              className="batch-grid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                gap: "1rem",
-              }}
-            >
-              {filteredBatches.map((batch) => {
-                const statusColor = getStatusColor(batch.currentStatus);
-
-                return (
+                  {/* Header */}
                   <div
-                    key={batch._id}
-                    onClick={() =>
-                      navigate(`/blockchain/verify-batches/${batch._id}`, {
-                        state: { batch },
-                      })
-                    }
                     style={{
-                      background: "white",
-                      borderRadius: "16px",
-                      padding: "1rem 1rem",
-                      boxShadow: "0 8px 18px rgba(0,0,0,0.06)",
-                      border: "1px solid #eef2f7",
-                      cursor: "pointer",
-                      transition: "transform 0.2s, box-shadow 0.2s",
                       display: "flex",
-                      flexDirection: "column",
-                      gap: "0.85rem",
-                      position: "relative",
-                      overflow: "hidden",
-                      minHeight: "190px",
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow =
-                        "0 14px 26px rgba(0,0,0,0.10)";
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.transform = "none";
-                      e.currentTarget.style.boxShadow =
-                        "0 8px 18px rgba(0,0,0,0.06)";
+                      justifyContent: "space-between",
+                      gap: "0.75rem",
+                      alignItems: "flex-start",
                     }}
                   >
-                    {/* Accent bar */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: "5px",
-                        background: statusColor,
-                      }}
-                    />
+                    <div style={{ minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: "0.78rem",
+                          color: "#64748b",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.35rem",
+                        }}
+                      >
+                        <Tag size={14} color="#94a3b8" />
+                        Batch ID
+                      </div>
 
-                    {/* Header */}
+                      <div
+                        style={{
+                          marginTop: "0.2rem",
+                          fontSize: "1.05rem",
+                          fontWeight: "800",
+                          color: "#0f172a",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                        title={batch.batchId || ""}
+                      >
+                        {batch.batchId || "Unknown Batch"}
+                      </div>
+                    </div>
+
+                    <ChevronRight size={20} color="#94a3b8" />
+                  </div>
+
+                  {/* Status + Date row */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "0.75rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        padding: "0.28rem 0.75rem",
+                        borderRadius: "999px",
+                        fontSize: "0.74rem",
+                        fontWeight: "800",
+                        background: `${statusColor}14`,
+                        color: statusColor,
+                        border: `1px solid ${statusColor}35`,
+                      }}
+                    >
+                      {formatStatus(batch.currentStatus)}
+                    </span>
+
                     <div
                       style={{
                         display: "flex",
-                        justifyContent: "space-between",
-                        gap: "0.75rem",
-                        alignItems: "flex-start",
+                        alignItems: "center",
+                        gap: "0.4rem",
+                        fontSize: "0.82rem",
+                        color: "#64748b",
+                        whiteSpace: "nowrap",
                       }}
                     >
+                      <Calendar size={15} color="#94a3b8" />
+                      {formatDate(batch.saleDate)}
+                    </div>
+                  </div>
+
+                  {/* Details  */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr",
+                      gap: "0.55rem",
+                      color: "#475569",
+                      fontSize: "0.92rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.55rem",
+                      }}
+                    >
+                      <User size={18} color="#94a3b8" />
                       <div style={{ minWidth: 0 }}>
                         <div
-                          style={{
-                            fontSize: "0.78rem",
-                            color: "#64748b",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.35rem",
-                          }}
+                          style={{ fontSize: "0.76rem", color: "#94a3b8" }}
                         >
-                          <Tag size={14} color="#94a3b8" />
-                          Batch ID
+                          Farmer
                         </div>
-
                         <div
                           style={{
-                            marginTop: "0.2rem",
-                            fontSize: "1.05rem",
-                            fontWeight: "800",
                             color: "#0f172a",
+                            fontWeight: 700,
                             whiteSpace: "nowrap",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                           }}
-                          title={batch.batchId || ""}
+                          title={batch.farmerName || "-"}
                         >
-                          {batch.batchId || "Unknown Batch"}
+                          {batch.farmerName || "-"}
                         </div>
                       </div>
-
-                      <ChevronRight size={20} color="#94a3b8" />
                     </div>
 
-                    {/* Status + Date row */}
                     <div
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: "0.75rem",
+                        gap: "0.55rem",
                       }}
                     >
-                      <span
-                        style={{
-                          padding: "0.28rem 0.75rem",
-                          borderRadius: "999px",
-                          fontSize: "0.74rem",
-                          fontWeight: "800",
-                          background: `${statusColor}14`,
-                          color: statusColor,
-                          border: `1px solid ${statusColor}35`,
-                        }}
-                      >
-                        {formatStatus(batch.currentStatus)}
-                      </span>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.4rem",
-                          fontSize: "0.82rem",
-                          color: "#64748b",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        <Calendar size={15} color="#94a3b8" />
-                        {formatDate(batch.saleDate)}
+                      <Leaf size={18} color="#94a3b8" />
+                      <div style={{ minWidth: 0 }}>
+                        <div
+                          style={{ fontSize: "0.76rem", color: "#94a3b8" }}
+                        >
+                          Pepper Type
+                        </div>
+                        <div
+                          style={{
+                            color: "#0f172a",
+                            fontWeight: 700,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                          title={batch.pepperType || "-"}
+                        >
+                          {batch.pepperType || "-"}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Details  */}
                     <div
                       style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr",
+                        display: "flex",
+                        alignItems: "center",
                         gap: "0.55rem",
-                        color: "#475569",
-                        fontSize: "0.92rem",
                       }}
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.55rem",
-                        }}
-                      >
-                        <User size={18} color="#94a3b8" />
-                        <div style={{ minWidth: 0 }}>
-                          <div
-                            style={{ fontSize: "0.76rem", color: "#94a3b8" }}
-                          >
-                            Farmer
-                          </div>
-                          <div
-                            style={{
-                              color: "#0f172a",
-                              fontWeight: 700,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                            title={batch.farmerName || "-"}
-                          >
-                            {batch.farmerName || "-"}
-                          </div>
+                      <MapPin size={18} color="#94a3b8" />
+                      <div style={{ minWidth: 0 }}>
+                        <div
+                          style={{ fontSize: "0.76rem", color: "#94a3b8" }}
+                        >
+                          District
                         </div>
-                      </div>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.55rem",
-                        }}
-                      >
-                        <Leaf size={18} color="#94a3b8" />
-                        <div style={{ minWidth: 0 }}>
-                          <div
-                            style={{ fontSize: "0.76rem", color: "#94a3b8" }}
-                          >
-                            Pepper Type
-                          </div>
-                          <div
-                            style={{
-                              color: "#0f172a",
-                              fontWeight: 700,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                            title={batch.pepperType || "-"}
-                          >
-                            {batch.pepperType || "-"}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.55rem",
-                        }}
-                      >
-                        <MapPin size={18} color="#94a3b8" />
-                        <div style={{ minWidth: 0 }}>
-                          <div
-                            style={{ fontSize: "0.76rem", color: "#94a3b8" }}
-                          >
-                            District
-                          </div>
-                          <div
-                            style={{
-                              color: "#0f172a",
-                              fontWeight: 700,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                            title={batch.district || "-"}
-                          >
-                            {batch.district || "-"}
-                          </div>
+                        <div
+                          style={{
+                            color: "#0f172a",
+                            fontWeight: 700,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                          title={batch.district || "-"}
+                        >
+                          {batch.district || "-"}
                         </div>
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-          <style>
-            {`
+        <style>
+          {`
               @media (max-width: 720px) {
                 .batch-grid {
                   grid-template-columns: 1fr !important;
                 }
               }
             `}
-          </style>
-        </div>
-      </main>
-    </div>
+        </style>
+      </div>
+    </SharedLayout>
   );
 }
