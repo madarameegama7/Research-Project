@@ -1,4 +1,3 @@
-// Consolidated Sinhala translations for Weekly Price Forecast screen
 class WeeklyPriceForecastSi {
   // Titles
   static const String screenTitle = 'මිල අනාවැකි';
@@ -33,31 +32,29 @@ class WeeklyPriceForecastSi {
   static const String temperature = 'උෂ්ණත්වය';
   static const String humidity = 'ආර්ද්‍රතාවය';
   static const String windSpeed = 'සුළං වේගය';
-  static const String rain = 'වැසි';
-  static const String noRain = 'වැසි නොමැත';
-  static const String breezy = 'මධ්‍යම සුළඟ';
-  static const String calm = 'සුළඟ නොමැති';
-  static const String highMoisture = 'උසස් ආර්ද්‍රතාව';
-
-  // Weather description translations
-  static const Map<String, String> _weatherDescriptions = {
-    'scattered clouds': 'විහිදුණු වලාකුළු',
-    'few clouds': 'අඩු වලාකුළු',
-    'broken clouds': 'බිඳුණු වලාකුළු',
-    'overcast clouds': 'අඳුරු වලාකුළු',
-    'clear sky': 'පැහැදිලි ආකාශය',
-    'light rain': 'සුළු වැසි',
-    'moderate rain': 'මධ්‍යම වැසි',
-    'heavy intensity rain': 'තද වැසි',
-    'mist': 'මිදුම',
-  };
 
   static const String isRequired = 'අවශ්‍යයි';
-  static const String weatherDataLoaded = 'කාලගුණ දත්ත ලබාගෙන ඇත';
+  static const String weatherDataLoaded =
+      'ඉදිරි සතිය සඳහා කාලගුණ දත්ත ලබාගෙන ඇත';
+
+  static const List<String> sinhalaMonths = [
+    'ජනවාරි',
+    'පෙබරවාරි',
+    'මාර්තු',
+    'අප්‍රේල්',
+    'මැයි',
+    'ජූනි',
+    'ජූලි',
+    'අගෝස්තු',
+    'සැප්තැම්බර්',
+    'ඔක්තෝබර්',
+    'නොවැම්බර්',
+    'දෙසැම්බර්',
+  ];
 
   static String translateWeatherDescription(String? desc) {
     if (desc == null) return '';
     final key = desc.trim().toLowerCase();
-    return _weatherDescriptions[key] ?? desc;
+    return key;
   }
 }
