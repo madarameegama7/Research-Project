@@ -1526,7 +1526,7 @@ class _DetailedReportScreenState extends State<DetailedReportScreen>
       _lastPdfPath = path;
       await Share.shareXFiles([
         XFile(path),
-      ], text: 'Ceylon Pepper Quality Report ($_batchId)');
+      ], text: 'Ceylon Pepper Quality Report123 ($_batchId)');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
