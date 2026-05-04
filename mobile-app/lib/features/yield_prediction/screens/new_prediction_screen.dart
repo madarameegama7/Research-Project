@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import '../screens/prediction_result_screen.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -7,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../../../providers/yield_prediction_provider.dart';
 import '../../../utils/yield_prediction/yield_prediction_si.dart';
 import '../../../services/weather_service.dart';
-import '../../../services/iot_ble_service.dart';
 import '../../../utils/location_constants.dart';
 
 class NewPredictionScreen extends StatefulWidget {
@@ -24,19 +22,17 @@ class _NewPredictionScreenState extends State<NewPredictionScreen> {
 
   double soilMoisture = 40;
   double temperature = 28;
+  double? upcomingRainfall;
+  double? upcomingHumidity;
+  SeasonalWeatherSummary? seasonalWeather;
   String? locationName;
   bool isFetchingWeather = false;
   DistrictInfo? selectedDistrict;
   
   List<File?> selectedImages = [null, null, null, null];
   final ImagePicker _picker = ImagePicker();
-  final IotBleService _iotService = IotBleService();
   
   String plantAge = "6–8 months";
-  bool useIoT = false;
-  String iotStatus = "Disconnected";
-  StreamSubscription? _iotMoistureSubscription;
-  StreamSubscription? _iotStatusSubscription;
 
   final List<String> _imageLabels = [
     "Front View",
@@ -52,36 +48,6 @@ class _NewPredictionScreenState extends State<NewPredictionScreen> {
     "ඉහළ/සමීප පෙනුම"
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _setupIotListeners();
-  }
-
-  @override
-  void dispose() {
-    _iotMoistureSubscription?.cancel();
-    _iotStatusSubscription?.cancel();
-    _iotService.dispose();
-    super.dispose();
-  }
-
-  void _setupIotListeners() {
-    _iotMoistureSubscription = _iotService.moistureStream.listen((value) {
-      if (useIoT) {
-        setState(() {
-          soilMoisture = value;
-        });
-      }
-    });
-
-    _iotStatusSubscription = _iotService.connectionStatusStream.listen((status) {
-      setState(() {
-        iotStatus = status;
-      });
-    });
-  }
-
   Future<void> _fetchWeather() async {
     if (selectedDistrict == null) return;
 
@@ -90,19 +56,62 @@ class _NewPredictionScreenState extends State<NewPredictionScreen> {
     });
 
     try {
-      final weatherData = await WeatherService.fetchWeatherData(
+      final forecast = await WeatherService.fetchSeasonalWeather(
         latitude: selectedDistrict!.latitude,
         longitude: selectedDistrict!.longitude,
+        months: 6,
       );
       setState(() {
-        temperature = weatherData.temperature;
+        seasonalWeather = forecast;
+        temperature = forecast.averageTemperature;
+        upcomingRainfall = forecast.totalRainfall;
+        upcomingHumidity = forecast.averageHumidity;
+        soilMoisture = _estimateSoilMoisture(
+          rainfallMm: forecast.totalRainfall / forecast.monthsCount,
+          humidityPercent: forecast.averageHumidity,
+          temperatureC: forecast.averageTemperature,
+        );
         locationName = widget.language == 'si' ? selectedDistrict!.nameSi : selectedDistrict!.name;
         isFetchingWeather = false;
       });
     } catch (e) {
-      print('Error fetching weather: $e');
-      setState(() => isFetchingWeather = false);
+      print('Error fetching seasonal weather: $e');
+
+      try {
+        final weatherData = await WeatherService.fetchWeatherData(
+          latitude: selectedDistrict!.latitude,
+          longitude: selectedDistrict!.longitude,
+        );
+        setState(() {
+          seasonalWeather = null;
+          temperature = weatherData.temperature;
+          upcomingRainfall = weatherData.rainfall;
+          upcomingHumidity = weatherData.humidity;
+          soilMoisture = _estimateSoilMoisture(
+            rainfallMm: weatherData.rainfall,
+            humidityPercent: weatherData.humidity,
+            temperatureC: weatherData.temperature,
+          );
+          locationName = widget.language == 'si' ? selectedDistrict!.nameSi : selectedDistrict!.name;
+          isFetchingWeather = false;
+        });
+      } catch (fallbackError) {
+        print('Error fetching current weather fallback: $fallbackError');
+        setState(() => isFetchingWeather = false);
+      }
     }
+  }
+
+  double _estimateSoilMoisture({
+    required double rainfallMm,
+    required double humidityPercent,
+    required double temperatureC,
+  }) {
+    double moisture = 40;
+    moisture += rainfallMm * 0.12;
+    moisture += (humidityPercent - 70) * 0.25;
+    moisture -= (temperatureC - 28) * 1.2;
+    return moisture.clamp(15, 85).toDouble();
   }
 
   @override
@@ -157,27 +166,19 @@ class _NewPredictionScreenState extends State<NewPredictionScreen> {
               color: Colors.blue,
             ),
             const SizedBox(height: 16),
-            _iotToggle(isSi),
-            const SizedBox(height: 12),
             _sliderField(
               label: isSi
                   ? YieldPredictionSi.soilMoisture
-                  : "Soil Moisture (%)",
+                  : "Estimated Soil Moisture (%)",
               value: soilMoisture,
               max: 100,
               color: Colors.blue,
-              // Disable manual slider when IoT is active
-              onChanged: useIoT ? null : (v) => setState(() => soilMoisture = v),
+              onChanged: (v) => setState(() => soilMoisture = v),
             ),
-            if (useIoT) 
-              _infoText(
-                "Connected to Sensor: $iotStatus", 
-                isError: iotStatus == "Connection failed" || iotStatus == "Device not found"
-              ),
             _infoText(
               isSi
                   ? YieldPredictionSi.optimalSoilMoistureImprovesNutrientAbsorption
-                  : "Optimal soil moisture improves nutrient absorption and yield accuracy.",
+                  : "Estimated from forecast rainfall, humidity, and temperature. Adjust it if your field is wetter or drier.",
             ),
             const SizedBox(height: 32),
             _stepHeader(
@@ -430,7 +431,7 @@ class _NewPredictionScreenState extends State<NewPredictionScreen> {
       imageFiles: validImages,
       soilMoisture: soilMoisture,
       temperature: temperature,
-      rainfall: null,
+      rainfall: upcomingRainfall,
       plantAge: plantAge,
     );
 
@@ -468,6 +469,10 @@ class _NewPredictionScreenState extends State<NewPredictionScreen> {
   // ================= UI COMPONENTS =================
 
   Widget _buildWeatherCard(bool isSi) {
+    final forecastLabel = seasonalWeather == null
+        ? (locationName == null ? "Select a district to fetch forecast" : "Current weather fallback")
+        : "Upcoming ${seasonalWeather!.monthsCount} month forecast";
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -565,6 +570,97 @@ class _NewPredictionScreenState extends State<NewPredictionScreen> {
               ],
             ],
           ),
+          const SizedBox(height: 10),
+          Text(
+            forecastLabel,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.82),
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _forecastMetric(
+                  icon: Icons.water_drop_rounded,
+                  label: "Rainfall",
+                  value: upcomingRainfall == null
+                      ? "--"
+                      : "${upcomingRainfall!.round()} mm",
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _forecastMetric(
+                  icon: Icons.water_rounded,
+                  label: "Humidity",
+                  value: upcomingHumidity == null
+                      ? "--"
+                      : "${upcomingHumidity!.round()}%",
+                ),
+              ),
+            ],
+          ),
+          if (seasonalWeather != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              "Using average forecast temperature for the current ML model.",
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.82),
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _forecastMetric({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.78),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -641,46 +737,6 @@ class _NewPredictionScreenState extends State<NewPredictionScreen> {
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         labelText: isSi ? YieldPredictionSi.plantAgeLabel : "Plant Age",
-      ),
-    );
-  }
-
-  Widget _iotToggle(bool isSi) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.wifi_rounded, color: Colors.blue, size: 20),
-              const SizedBox(width: 12),
-              Text(
-                isSi ? YieldPredictionSi.useIoTSensorData : "Use IoT Sensor Data",
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-              ),
-            ],
-          ),
-          Switch.adaptive(
-            value: useIoT,
-            activeColor: Colors.blue,
-            onChanged: (v) {
-              setState(() {
-                useIoT = v;
-                if (useIoT) {
-                  _iotService.startConnecting();
-                } else {
-                  _iotService.disconnect();
-                }
-              });
-            },
-          ),
-        ],
       ),
     );
   }
@@ -816,8 +872,11 @@ class _NewPredictionScreenState extends State<NewPredictionScreen> {
       onChanged: (v) {
         setState(() {
           selectedDistrict = v;
-          _fetchWeather();
+          seasonalWeather = null;
+          upcomingRainfall = null;
+          upcomingHumidity = null;
         });
+        _fetchWeather();
       },
       decoration: InputDecoration(
         filled: true,
