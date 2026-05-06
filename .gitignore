@@ -3,3 +3,5 @@ mobile-app/lib/config/api_keys.dart
 
 # Ignore common generated files at repo root
 .DS_Store
+config.bat
+node_modules
