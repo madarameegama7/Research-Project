@@ -627,23 +627,6 @@ class _HarvestPredictionDashboardState extends State<HarvestPredictionDashboard>
             ),
           ),
         ),
-        SizedBox(height: responsive.value(mobile: 8, tablet: 10, desktop: 12)),
-        _resourceCard(
-          responsive,
-          title: _t("IoT Sensor Setup", YieldPredictionSi.iotSensorSetupTitle),
-          description: _t(
-            "Connect soil sensor",
-            YieldPredictionSi.connectSoilSensor,
-          ),
-          icon: Icons.sensors_rounded,
-          color: Colors.deepPurple,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => IotSensorSetupScreen(language: widget.language),
-            ),
-          ),
-        ),
       ],
     );
   }

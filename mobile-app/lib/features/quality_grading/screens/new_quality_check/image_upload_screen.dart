@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../../../utils/responsive.dart';
 import '../../../../utils/language_prefs.dart';
 import '../../../../utils/quality_grading/image_upload_screen_si.dart';
@@ -94,23 +95,27 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
     final result = await _picker.pickImage(source: source, imageQuality: 85);
     if (result == null) return;
 
-    final file = File(result.path);
-
+    final stableFile = await _savePickedImage(result, key);
     setState(() => _uploadingKey = key);
 
     // validate before saving
     try {
       final api = QualityCheckApi();
-      await api.validateImage(image: file);
+      await api.validateImage(image: stableFile);
 
       if (!mounted) return;
       setState(() {
-        images[key] = file;
+        images[key] = stableFile;
         _uploadingKey = null;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() => _uploadingKey = null);
+
+      // Remove the copied file if validation failed to avoid stale files.
+      if (await stableFile.exists()) {
+        await stableFile.delete().catchError((_) {});
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -124,6 +129,18 @@ class _ImageUploadScreenState extends State<ImageUploadScreen>
         ),
       );
     }
+  }
+
+  Future<File> _savePickedImage(XFile pickedFile, String key) async {
+    final bytes = await pickedFile.readAsBytes();
+    final dir = await getApplicationDocumentsDirectory();
+    final filename = pickedFile.name.isNotEmpty
+        ? pickedFile.name
+        : 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final stablePath = '${dir.path}/quality_grading_${key}_$filename';
+    final stableFile = File(stablePath);
+    await stableFile.writeAsBytes(bytes, flush: true);
+    return stableFile;
   }
 
   Future<ImageSource?> _showImageSourceSheet() async {
