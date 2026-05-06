@@ -29,6 +29,40 @@ class WeatherData {
   });
 }
 
+class MonthlyWeatherForecast {
+  final String month;
+  final double temperature;
+  final double rainfall;
+  final double humidity;
+
+  MonthlyWeatherForecast({
+    required this.month,
+    required this.temperature,
+    required this.rainfall,
+    required this.humidity,
+  });
+}
+
+class SeasonalWeatherSummary {
+  final double averageTemperature;
+  final double totalRainfall;
+  final double averageHumidity;
+  final int monthsCount;
+  final String startMonth;
+  final String endMonth;
+  final List<MonthlyWeatherForecast> monthlyForecasts;
+
+  SeasonalWeatherSummary({
+    required this.averageTemperature,
+    required this.totalRainfall,
+    required this.averageHumidity,
+    required this.monthsCount,
+    required this.startMonth,
+    required this.endMonth,
+    required this.monthlyForecasts,
+  });
+}
+
 class WeatherEntry {
   final DateTime date;
   final double humidity;
@@ -59,7 +93,41 @@ class WeatherNotification {
 
 enum IconType { humidity, temperature, rainfall, warning }
 
+class _SeasonalWeatherBucket {
+  final String month;
+  double temperatureSum = 0;
+  double rainfallSum = 0;
+  double humiditySum = 0;
+  int count = 0;
+
+  _SeasonalWeatherBucket(this.month);
+
+  void add({
+    required double temperature,
+    required double rainfall,
+    required double humidity,
+  }) {
+    temperatureSum += temperature;
+    rainfallSum += rainfall;
+    humiditySum += humidity;
+    count++;
+  }
+
+  MonthlyWeatherForecast toForecast() {
+    final divisor = count == 0 ? 1 : count;
+    return MonthlyWeatherForecast(
+      month: month,
+      temperature: temperatureSum / divisor,
+      rainfall: rainfallSum,
+      humidity: humiditySum / divisor,
+    );
+  }
+}
+
 class WeatherService {
+  static const String seasonalBaseUrl =
+      'https://seasonal-api.open-meteo.com/v1/seasonal';
+
   // Get weather notifications based on current conditions
   static List<WeatherNotification> getNotifications({
     required double humidity,
@@ -238,6 +306,119 @@ class WeatherService {
       print('❌ Weather service error: $e');
       rethrow;
     }
+  }
+
+  static Future<SeasonalWeatherSummary> fetchSeasonalWeather({
+    required double latitude,
+    required double longitude,
+    int months = 6,
+  }) async {
+    final int safeMonths = months.clamp(1, 6).toInt();
+    final forecastDays = safeMonths * 31;
+    final url = Uri.parse(
+      '$seasonalBaseUrl?latitude=$latitude&longitude=$longitude'
+      '&hourly=temperature_2m,relative_humidity_2m,precipitation'
+      '&models=ecmwf_seas5'
+      '&forecast_days=$forecastDays'
+      '&timezone=auto',
+    );
+
+    print('[SeasonalWeather] Fetching forecast from: $url');
+
+    final response = await http.get(url).timeout(
+      const Duration(seconds: 15),
+      onTimeout: () {
+        throw Exception('Seasonal weather API request timeout');
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Seasonal weather API error: ${response.statusCode}');
+    }
+
+    final data = json.decode(response.body) as Map<String, dynamic>;
+    return _parseSeasonalWeatherResponse(data, safeMonths);
+  }
+
+  static SeasonalWeatherSummary _parseSeasonalWeatherResponse(
+    Map<String, dynamic> data,
+    int requestedMonths,
+  ) {
+    final hourly = data['hourly'];
+    if (hourly is! Map<String, dynamic>) {
+      throw Exception('Seasonal weather response does not include hourly data');
+    }
+
+    final times = List<String>.from(hourly['time'] ?? const []);
+    final temperatures = List<dynamic>.from(
+      hourly['temperature_2m'] ?? const [],
+    );
+    final rainfall = List<dynamic>.from(hourly['precipitation'] ?? const []);
+    final humidity = List<dynamic>.from(
+      hourly['relative_humidity_2m'] ?? const [],
+    );
+
+    final readingCount = [
+      times.length,
+      temperatures.length,
+      rainfall.length,
+      humidity.length,
+    ].reduce((a, b) => a < b ? a : b);
+
+    if (readingCount == 0) {
+      throw Exception('Seasonal weather response is empty');
+    }
+
+    final monthlyBuckets = <String, _SeasonalWeatherBucket>{};
+
+    for (int i = 0; i < readingCount; i++) {
+      final month = times[i].length >= 7 ? times[i].substring(0, 7) : times[i];
+      final bucket = monthlyBuckets.putIfAbsent(
+        month,
+        () => _SeasonalWeatherBucket(month),
+      );
+      bucket.add(
+        temperature: _toDouble(temperatures[i]),
+        rainfall: _toDouble(rainfall[i]),
+        humidity: _toDouble(humidity[i]),
+      );
+    }
+
+    final monthlyForecasts = monthlyBuckets.values
+        .take(requestedMonths)
+        .map((bucket) => bucket.toForecast())
+        .toList();
+
+    if (monthlyForecasts.isEmpty) {
+      throw Exception('Seasonal weather response is empty');
+    }
+
+    double tempSum = 0;
+    double rainSum = 0;
+    double humiditySum = 0;
+
+    for (final forecast in monthlyForecasts) {
+      tempSum += forecast.temperature;
+      rainSum += forecast.rainfall;
+      humiditySum += forecast.humidity;
+    }
+
+    final count = monthlyForecasts.length;
+
+    return SeasonalWeatherSummary(
+      averageTemperature: tempSum / count,
+      totalRainfall: rainSum,
+      averageHumidity: humiditySum / count,
+      monthsCount: count,
+      startMonth: monthlyForecasts.first.month,
+      endMonth: monthlyForecasts.last.month,
+      monthlyForecasts: monthlyForecasts,
+    );
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   // Parse OpenWeatherMap API response
